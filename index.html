@@ -52,9 +52,18 @@
 
         <div id="tab-lancar" class="hidden">
             <div class="card">
-                <h4>📍 Dados do Torneio</h4>
+                <h4>📍 Dados do Torneio e Treino</h4>
                 <input type="text" id="localEvento" placeholder="Local (Ex: Campo Novo)" oninput="escutarDados()">
                 <input type="date" id="dataEvento" onchange="escutarDados()">
+<label style="font-size: 12px; color: var(--accent);">Selecione a Categoria:</label>
+<select id="aveCategoria">
+    <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
+    <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
+    <option value="Canto Livre Adulto">Canto Livre Adulto</option>
+    <option value="Canto Livre Filhote">Canto Livre Filhote</option>
+    <option value="Peito de Aço Adulto">Peito de Aço Adulto</option>
+    <option value="Peito de Aço Filhote">Peito de Aço Filhote</option>
+</select>
             </div>
             <div class="card">
                 <h4>🐦 Lançar Ave (00:00:00)</h4>
@@ -246,6 +255,8 @@ function compartilharZap() {
     const local = document.getElementById('localEvento').value || "Torneio";
     const dataInput = document.getElementById('dataEvento').value;
     const dataBr = dataInput ? dataInput.split('-').reverse().join('/') : "";
+// Dentro do forEach da função compartilharZap:
+mensagem += `*${i + 1}º* ${p.nome.toUpperCase()} (${p.categoria})\n`;
     
     if (dadosRanking.length === 0) {
         return alert("O ranking está vazio! Lance as aves primeiro.");
