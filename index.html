@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fibra OS - Sistema Profissional v13</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <style>
+        :root { --primary: #27ae60; --dark: #121212; --accent: #f39c12; --danger: #e74c3c; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: #e0e0e0; margin: 0; padding: 10px; }
+        .container { max-width: 600px; margin: auto; }
+        .card { background: #1e1e1e; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333; }
+        
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; overflow-x: auto; }
+        .tab-link { color: #888; cursor: pointer; font-weight: bold; white-space: nowrap; padding: 5px; }
+        .tab-link.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+
+        input, select { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #333; background: #2d2d2d; color: white; box-sizing: border-box; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-zap { background: #25d366; color: white; }
+        
+        .hidden { display: none !important; }
+        .ranking-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; font-size: 14px; }
+        .status-badge { font-size: 12px; padding: 4px 8px; border-radius: 4px; float: right; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="loginSection" class="card">
+        <h2 style="text-align:center">🛡️ Fibra OS Login</h2>
+        <input type="text" id="userInput" placeholder="Usuário">
+        <input type="password" id="userPass" placeholder="Senha">
+        <button class="btn btn-save" onclick="validarLogin()">ENTRAR</button>
+    </div>
+
+    <div id="appContent" class="hidden">
+        <div class="nav-tabs">
+            <div class="tab-link active" onclick="showTab('ranking')">🏆 Ranking/Lançar</div>
+            <div class="tab-link" onclick="showTab('historico')">📊 Histórico Aves</div>
+            <div id="tabAdminLink" class="tab-link hidden" onclick="showTab('admin')">⚙️ Painel Matheus</div>
+        </div>
+
+        <div id="tab-ranking">
+            <div class="card">
+                <span id="txtBloqueio" class="status-badge"></span>
+                <select id="tipoEvento">
+                    <option value="Treino">🔰 Treino</option>
+                    <option value="Torneio">🏆 Torneio</option>
+                </select>
+                <select id="catOficial">
+                    <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
+                    <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
+                    <option value="Canto Livre Adulto">Canto Livre Adulto</option>
+                    <option value="Canto Livre Filhote">Canto Livre Filhote</option>
+                    <option value="Peito de Aço Adulto">Peito de Aço Adulto</option>
+                    <option value="Peito de Aço Filhote">Peito de Aço Filhote</option>
+                </select>
+                <input type="text" id="localEvento" placeholder="Cidade/Local">
+                <input type="date" id="dataEvento" onchange="verificarBloqueio()">
+                <input type="text" id="nomeJuiz" placeholder="Juiz da Roda">
+                <div style="display:flex; gap:5px">
+                    <input type="text" id="tempoAdp" placeholder="ADP (ex: 45)">
+                    <input type="text" id="qtdElim" placeholder="Eliminatórias (ex: 2)">
+                </div>
+            </div>
+
+            <div id="areaCadastro" class="card">
+                <input type="text" id="aveNome" placeholder="Nome do Canário">
+                <input type="text" id="aveDono" placeholder="Proprietário">
+                <input type="text" id="aveAnilha" placeholder="Anilha (para o histórico)">
+                <input type="text" id="aveTempo" placeholder="00:00.0 (Min:Seg.Déc)" oninput="maskTempo(this)">
+                <button id="btnSalvar" class="btn btn-save" onclick="salvarResultado()">REGISTRAR TEMPO</button>
+            </div>
+
+            <div class="card">
+                <div id="listaRanking"></div>
+                <button class="btn btn-zap" onclick="compartilharZap()">🔥 COMPARTILHAR NO WHATSAPP</button>
+            </div>
+        </div>
+
+        <div id="tab-historico" class="hidden">
+            <div class="card">
+                <h3>Pesquisar Canário</h3>
+                <input type="text" id="buscaAnilha" placeholder="Digite a Anilha" oninput="pesquisarAve()">
+                <div id="resBusca"></div>
+            </div>
+        </div>
+
+        <div id="tab-admin" class="hidden">
+            <div class="card">
+                <h3>Gestão de Usuários</h3>
+                <input type="text" id="nUser" placeholder="Nome do novo usuário">
+                <input type="text" id="nPass" placeholder="Senha">
+                <select id="nRole">
+                    <option value="op">Operador (Tiago)</option>
+                    <option value="view">Visitante (Paulo)</option>
+                </select>
+                <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR ACESSO</button>
+            </div>
+            <div class="card">
+                <label>Dias para Bloqueio Prévio:</label>
+                <input type="number" id="diasConfig" value="4" onchange="salvarConfigMatheus()">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 1. CONFIGURAÇÃO FIREBASE (SUBSTITUA AQUI) ---
+    const firebaseConfig = {
+        apiKey: "SUA_API_KEY",
+        authDomain: "SEU_PROJETO.firebaseapp.com",
+        databaseURL: "https://SEU_PROJETO.firebaseio.com",
+        projectId: "SEU_PROJETO",
+        appId: "APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let userLogado = null;
+    let dadosRanking = [];
+
+    // --- 2. LOGIN E SEGURANÇA ---
+    async function validarLogin() {
+        const u = document.getElementById('userInput').value.toLowerCase();
+        const p = document.getElementById('userPass').value;
+
+        if(u === 'matheus' && p === 'admin123') {
+            entrar({nome: 'Matheus', role: 'admin'});
+        } else {
+            const snap = await db.ref('usuarios/'+u).once('value');
+            if(snap.exists() && snap.val().senha === p) entrar(snap.val());
+            else alert("Acesso negado!");
+        }
+    }
+
+    function entrar(dados) {
+        userLogado = dados;
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('appContent').classList.remove('hidden');
+        if(dados.role === 'admin') document.getElementById('tabAdminLink').classList.remove('hidden');
+        escutarDados();
+    }
+
+    // --- 3. LOGICA DE NEGÓCIO ---
+    function maskTempo(i) {
+        let v = i.value.replace(/\D/g,'');
+        if(v.length >= 5) v = v.replace(/^(\d{2})(\d{2})(\d{1})/, "$1:$2.$3");
+        else if(v.length >= 3) v = v.replace(/^(\d{2})(\d{2})/, "$1:$2");
+        i.value = v;
+    }
+
+    async function verificarBloqueio() {
+        const dataE = document.getElementById('dataEvento').value;
+        if(!dataE) return;
+        const snap = await db.ref('config_matheus/dias').once('value');
+        const diasLim = snap.val() || 4;
+        const diff = Math.ceil((new Date(dataE) - new Date()) / (86400000));
+        
+        const badge = document.getElementById('txtBloqueio');
+        if(diff <= diasLim && userLogado.role !== 'admin') {
+            badge.innerText = "🔒 BLOQUEADO"; badge.style.color = "var(--danger)";
+            document.getElementById('btnSalvar').disabled = true;
+        } else {
+            badge.innerText = "🔓 ABERTO"; badge.style.color = "var(--primary)";
+            document.getElementById('btnSalvar').disabled = false;
+        }
+        escutarDados();
+    }
+
+    function salvarResultado() {
+        const local = document.getElementById('localEvento').value;
+        const data = document.getElementById('dataEvento').value;
+        const id = data + "_" + local.replace(/ /g,'_');
+        
+        const info = {
+            nome: document.getElementById('aveNome').value,
+            dono: document.getElementById('aveDono').value,
+            anilha: document.getElementById('aveAnilha').value,
+            tempo: document.getElementById('aveTempo').value,
+            juiz: document.getElementById('nomeJuiz').value,
+            data: data, local: local
+        };
+
+        db.ref('torneios/'+id).push(info);
+        db.ref('historico_aves/'+info.anilha).push(info);
+        alert("Salvo!");
+    }
+
+    function escutarDados() {
+        const id = document.getElementById('dataEvento').value + "_" + document.getElementById('localEvento').value.replace(/ /g,'_');
+        db.ref('torneios/'+id).on('value', snap => {
+            dadosRanking = [];
+            snap.forEach(c => { dadosRanking.push(c.val()); });
+            renderizar();
+        });
+    }
+
+    function renderizar() {
+        dadosRanking.sort((a,b) => b.tempo.localeCompare(a.tempo));
+        const div = document.getElementById('listaRanking');
+        div.innerHTML = "<h4>TOP 10 ATUAL</h4>";
+        dadosRanking.slice(0,10).forEach((p,i) => {
+            div.innerHTML += `<div class="ranking-item"><span>${i+1}º ${p.nome} (${p.dono})</span><b>${p.tempo}</b></div>`;
+        });
+    }
+
+    function compartilharZap() {
+        const tipo = document.getElementById('tipoEvento').value;
+        const cat = document.getElementById('catOficial').value;
+        const local = document.getElementById('localEvento').value;
+        const data = document.getElementById('dataEvento').value.split('-').reverse().join('/');
+        const adp = document.getElementById('tempoAdp').value;
+        const elim = document.getElementById('qtdElim').value;
+        
+        const criadores = [...new Set(dadosRanking.map(d => d.dono))].length;
+
+        let m = `🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰\n*${tipo}* 2026\n🔥⏱️🎶\n*fibra*\n\n`;
+        m += `*Esquenta🔥* dia ${data}\n*Cidade* ${local}.\n\n`;
+        m += `*${cat}*\n*${adp} adp*\n*${elim} eliminatória de 10 m*\n*Final de 15 m*\n\n`;
+        
+        dadosRanking.slice(0,10).forEach((p,i) => {
+            m += `${i+1}⁰ ${p.nome} ${p.dono}  ${p.tempo}\n`;
+        });
+
+        m += `\n*${criadores} criador*\n*${dadosRanking.length} ave*\n\n`;
+        m += `CANTO *${cat}* ⏱️🎼⏱️🎼💪💪👏👏 ${local}`;
+        window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(m));
+    }
+
+    // Funções extras (Painel Admin e Abas)
+    function showTab(t){
+        document.querySelectorAll('[id^="tab-"]').forEach(d => d.classList.add('hidden'));
+        document.getElementById('tab-'+t).classList.remove('hidden');
+        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+    function cadastrarUsuario() {
+        const n = document.getElementById('nUser').value.toLowerCase();
+        db.ref('usuarios/'+n).set({nome:n, senha: document.getElementById('nPass').value, role: document.getElementById('nRole').value});
+        alert("Criado!");
+    }
+    function salvarConfigMatheus(){ db.ref('config_matheus/dias').set(document.getElementById('diasConfig').value); }
+</script>
+</body>
+</html>
