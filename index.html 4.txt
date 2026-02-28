@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fibra OS v14 - Gestão Profissional</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
+    <style>
+        :root { --primary: #27ae60; --dark: #121212; --accent: #f39c12; --danger: #e74c3c; --card: #1e1e1e; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: #e0e0e0; margin: 0; padding: 10px; }
+        .container { max-width: 600px; margin: auto; }
+        .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333; }
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; overflow-x: auto; }
+        .tab-link { color: #888; cursor: pointer; font-weight: bold; white-space: nowrap; padding: 5px; text-decoration: none; }
+        .tab-link.active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+        input, select { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #333; background: #2d2d2d; color: white; box-sizing: border-box; font-size: 16px; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 14px; }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-zap { background: #25d366; color: white; }
+        .btn-del { background: none; border: none; color: var(--danger); cursor: pointer; font-weight: bold; }
+        .hidden { display: none !important; }
+        .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #333; }
+        .status-badge { font-size: 12px; padding: 4px 10px; border-radius: 20px; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+        .tempo-destaque { color: var(--primary); font-family: monospace; font-size: 18px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="loginSection" class="card">
+        <h2 style="text-align:center; color: var(--primary);">🔰 Fibra OS Login</h2>
+        <input type="text" id="userInput" placeholder="Usuário (Ex: matheus)">
+        <input type="password" id="userPass" placeholder="Senha">
+        <button class="btn btn-save" onclick="validarLogin()">ENTRAR NO SISTEMA</button>
+        <p style="font-size: 11px; color: #666; text-align: center; margin-top: 10px;">Visitantes: Usuário 'paulo' sem senha.</p>
+    </div>
+
+    <div id="appContent" class="hidden">
+        <div class="nav-tabs">
+            <div class="tab-link active" onclick="showTab('ranking')">🏆 Ranking</div>
+            <div class="tab-link" onclick="showTab('historico')">📊 Histórico</div>
+            <div id="tabAdminLink" class="tab-link hidden" onclick="showTab('admin')">⚙️ Painel Matheus</div>
+        </div>
+
+        <div id="tab-ranking">
+            <div class="card">
+                <div id="txtBloqueio" class="status-badge">Verificando...</div>
+                <select id="tipoEvento">
+                    <option value="Treino">🔰 Treino</option>
+                    <option value="Torneio">🏆 Torneio</option>
+                </select>
+                <select id="catOficial">
+                    <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
+                    <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
+                    <option value="Canto Livre Adulto">Canto Livre Adulto</option>
+                    <option value="Canto Livre Filhote">Canto Livre Filhote</option>
+                    <option value="Peito de Aço Adulto">Peito de Aço Adulto</option>
+                    <option value="Peito de Aço Filhote">Peito de Aço Filhote</option>
+                </select>
+                <input type="text" id="localEvento" placeholder="Cidade / Local">
+                <input type="date" id="dataEvento" onchange="verificarBloqueio()">
+                <input type="text" id="nomeJuiz" placeholder="Juiz da Roda">
+                <div style="display:flex; gap:5px">
+                    <input type="text" id="tempoAdp" placeholder="ADP (ex: 45)">
+                    <input type="text" id="qtdElim" placeholder="Eliminatórias (ex: 2)">
+                </div>
+            </div>
+
+            <div id="areaCadastro" class="card hidden">
+                <h4>Lançar Tempo (Min:Seg.Déc)</h4>
+                <input type="text" id="aveNome" placeholder="Nome do Canário">
+                <input type="text" id="aveDono" placeholder="Proprietário">
+                <input type="text" id="aveAnilha" placeholder="Anilha (Obrigatório)">
+                <input type="text" id="aveTempo" placeholder="00:00.0" oninput="maskTempo(this)" maxlength="7">
+                <button id="btnSalvar" class="btn btn-save" onclick="salvarResultado()">SALVAR NA NUVEM</button>
+            </div>
+
+            <div class="card">
+                <div id="listaRanking"></div>
+                <button class="btn btn-zap" onclick="compartilharZap()">🔥 COMPARTILHAR NO WHATSAPP</button>
+            </div>
+        </div>
+
+        <div id="tab-historico" class="hidden">
+            <div class="card">
+                <h3>🔍 Histórico por Anilha</h3>
+                <input type="text" id="buscaAnilha" placeholder="Digite a anilha da ave..." oninput="pesquisarAve()">
+                <div id="resBusca" style="margin-top:15px"></div>
+            </div>
+        </div>
+
+        <div id="tab-admin" class="hidden">
+            <div class="card">
+                <h3>👥 Gestão de Usuários</h3>
+                <input type="text" id="nUser" placeholder="Nome do usuário (ex: genildo)">
+                <input type="text" id="nPass" placeholder="Senha">
+                <label>Poder do Usuário:</label>
+                <select id="nRole">
+                    <option value="admin">🏆 Administrador (Altera/Exclui)</option>
+                    <option value="supervisor">🔑 Supervisor (Só Lança)</option>
+                    <option value="view">👁️ Visitante (Só Vê)</option>
+                </select>
+                <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR NOVO ACESSO</button>
+            </div>
+            <div class="card">
+                <label>Dias para Bloqueio Automático:</label>
+                <input type="number" id="diasConfig" value="4" onchange="salvarConfigMatheus()">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 1. CONFIGURAÇÃO FIREBASE (SUAS CHAVES INTEGRADAS) ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyBDHnCwjz-1yFmq_Cg-3WJk-Pscw_i0YRk",
+        authDomain: "ranking-canarios.firebaseapp.com",
+        databaseURL: "https://ranking-canarios-default-rtdb.firebaseio.com",
+        projectId: "ranking-canarios",
+        appId: "1:911292378909:web:5ec1324127b917a1c63bf4"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let userLogado = null;
+    let dadosRanking = [];
+
+    async function validarLogin() {
+        const u = document.getElementById('userInput').value.toLowerCase().trim();
+        const p = document.getElementById('userPass').value;
+        if(u === 'matheus' && p === 'admin123') { entrar({nome: 'Matheus', role: 'admin'}); return; }
+        if(u === 'paulo' && p === '') { entrar({nome: 'Paulo', role: 'view'}); return; }
+        const snap = await db.ref('usuarios/'+u).once('value');
+        if(snap.exists() && snap.val().senha === p) { entrar(snap.val()); } else { alert("Acesso negado!"); }
+    }
+
+    function entrar(dados) {
+        userLogado = dados;
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('appContent').classList.remove('hidden');
+        if(dados.role === 'admin') document.getElementById('tabAdminLink').classList.remove('hidden');
+        if(dados.role !== 'view') document.getElementById('areaCadastro').classList.remove('hidden');
+        verificarBloqueio();
+    }
+
+    function maskTempo(i) {
+        let v = i.value.replace(/\D/g,'');
+        if(v.length >= 5) v = v.replace(/^(\d{2})(\d{2})(\d{1})/, "$1:$2.$3");
+        else if(v.length >= 3) v = v.replace(/^(\d{2})(\d{2})/, "$1:$2");
+        i.value = v;
+    }
+
+    async function verificarBloqueio() {
+        const dataE = document.getElementById('dataEvento').value;
+        if(!dataE) return;
+        const snap = await db.ref('config_matheus/dias').once('value');
+        const diasLim = snap.val() || 4;
+        const diff = Math.ceil((new Date(dataE + "T00:00:00") - new Date()) / (1000 * 60 * 60 * 24));
+        const badge = document.getElementById('txtBloqueio');
+        const btn = document.getElementById('btnSalvar');
+        if(diff <= diasLim && userLogado.role !== 'admin') {
+            badge.innerText = "🔒 EVENTO BLOQUEADO"; badge.style.background = "var(--danger)";
+            btn.disabled = true; btn.style.opacity = "0.5";
+        } else {
+            badge.innerText = "🔓 ABERTO"; badge.style.background = "var(--primary)";
+            btn.disabled = false; btn.style.opacity = "1";
+        }
+        escutarDados();
+    }
+
+    function salvarResultado() {
+        const local = document.getElementById('localEvento').value;
+        const data = document.getElementById('dataEvento').value;
+        const anilha = document.getElementById('aveAnilha').value.toUpperCase().trim();
+        const tempo = document.getElementById('aveTempo').value;
+        if(!local || !data || !anilha || tempo.length < 7) { alert("Preencha tudo! Tempo: 00:00.0"); return; }
+        const idTorneio = data + "_" + local.replace(/ /g,'_');
+        const info = {
+            id_db: Date.now(),
+            nome: document.getElementById('aveNome').value,
+            dono: document.getElementById('aveDono').value,
+            anilha: anilha, tempo: tempo,
+            juiz: document.getElementById('nomeJuiz').value,
+            data: data, local: local, cat: document.getElementById('catOficial').value
+        };
+        db.ref('torneios/'+idTorneio+'/'+info.id_db).set(info);
+        db.ref('historico_aves/'+anilha+'/'+info.id_db).set(info);
+        alert("Salvo!");
+        document.getElementById('aveNome').value = ""; document.getElementById('aveTempo').value = "";
+    }
+
+    function escutarDados() {
+        const id = document.getElementById('dataEvento').value + "_" + document.getElementById('localEvento').value.replace(/ /g,'_');
+        db.ref('torneios/'+id).on('value', snap => {
+            dadosRanking = [];
+            snap.forEach(c => { dadosRanking.push(c.val()); });
+            renderizar();
+        });
+    }
+
+    function renderizar() {
+        dadosRanking.sort((a,b) => b.tempo.localeCompare(a.tempo));
+        const div = document.getElementById('listaRanking');
+        div.innerHTML = "<h4>🏆 TOP 10 ATUAL</h4>";
+        dadosRanking.slice(0,10).forEach((p,i) => {
+            let acaoAdmin = (userLogado.role === 'admin') ? `<button class="btn-del" onclick="excluirItem('${p.id_db}', '${p.anilha}')">✘</button>` : '';
+            div.innerHTML += `<div class="ranking-item"><span>${i+1}º ${p.nome} (${p.dono}) ${acaoAdmin}</span><b class="tempo-destaque">${p.tempo}</b></div>`;
+        });
+    }
+
+    function excluirItem(id, anilha) {
+        if(!confirm("Excluir registro?")) return;
+        const idTorneio = document.getElementById('dataEvento').value + "_" + document.getElementById('localEvento').value.replace(/ /g,'_');
+        db.ref('torneios/'+idTorneio+'/'+id).remove();
+        db.ref('historico_aves/'+anilha+'/'+id).remove();
+    }
+
+    function compartilharZap() {
+        const tipo = document.getElementById('tipoEvento').value;
+        const cat = document.getElementById('catOficial').value;
+        const local = document.getElementById('localEvento').value;
+        const data = document.getElementById('dataEvento').value.split('-').reverse().join('/');
+        const adp = document.getElementById('tempoAdp').value;
+        const elim = document.getElementById('qtdElim').value;
+        const criadores = [...new Set(dadosRanking.map(d => d.dono))].length;
+        let m = `🔰🔰🔰🔰🔰🔰🔰🔰🔰🔰\n*${tipo}* 2026\n🔥⏱️🎶\n*fibra*\n\n*Esquenta🔥* dia ${data}\n*Cidade* ${local}.\n\n*${cat}*\n*${adp} adp*\n*${elim} eliminatória de 10 m*\n*Final de 15 m*\n\n`;
+        dadosRanking.slice(0,10).forEach((p,i) => { m += `${i+1}⁰ ${p.nome} ${p.dono}  ${p.tempo}\n`; });
+        m += `\n*${criadores} criador*\n*${dadosRanking.length} ave*\n\nCANTO *${cat}* ⏱️🎼⏱️🎼💪💪👏👏 ${local}`;
+        window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(m));
+    }
+
+    function pesquisarAve() {
+        const a = document.getElementById('buscaAnilha').value.toUpperCase();
+        if(a.length < 3) return;
+        db.ref('historico_aves/'+a).on('value', snap => {
+            const res = document.getElementById('resBusca');
+            res.innerHTML = "";
+            snap.forEach(c => { const r = c.val(); res.innerHTML += `<div class="ranking-item"><span>${r.data} - ${r.local}</span><b>${r.tempo}</b></div>`; });
+        });
+    }
+
+    function cadastrarUsuario() {
+        const n = document.getElementById('nUser').value.toLowerCase().trim();
+        const p = document.getElementById('nPass').value;
+        const r = document.getElementById('nRole').value;
+        if(!n || !p) return alert("Preencha tudo!");
+        db.ref('usuarios/'+n).set({nome:n, senha:p, role:r});
+        alert("Acesso criado!");
+    }
+
+    function salvarConfigMatheus(){ db.ref('config_matheus/dias').set(document.getElementById('diasConfig').value); }
+    function showTab(t){
+        document.querySelectorAll('[id^="tab-"]').forEach(d => d.classList.add('hidden'));
+        document.getElementById('tab-'+t).classList.remove('hidden');
+        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+</script>
+</body>
+</html>
