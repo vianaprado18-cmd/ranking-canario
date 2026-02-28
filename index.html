@@ -3,35 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fibra OS v16.5 - Segurança Total</title>
+    <title>Fibra OS v16.6 - Campo Novo</title>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     <style>
         :root { --primary: #27ae60; --dark: #121212; --accent: #f39c12; --danger: #e74c3c; --card: #1e1e1e; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: #e0e0e0; margin: 0; padding: 10px; }
         .container { max-width: 600px; margin: auto; }
-        .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333; }
+        .card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333; text-align: center; }
         .nav-tabs { display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; overflow-x: auto; }
         .tab-link { color: #888; cursor: pointer; font-weight: bold; white-space: nowrap; padding: 5px; font-size: 14px; text-transform: uppercase; }
         .tab-link.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
-        input, select { width: 100%; padding: 12px; margin: 5px 0; border-radius: 8px; border: 1px solid #333; background: #2d2d2d; color: white; box-sizing: border-box; font-size: 16px; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #2d2d2d; color: white; box-sizing: border-box; font-size: 16px; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-save { background: var(--primary); color: white; }
-        .btn-zap { background: #25d366; color: white; margin-top: 20px; }
         .btn-del { background: none; border: none; color: var(--danger); cursor: pointer; font-weight: bold; }
         .hidden { display: none !important; }
-        .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #333; }
-        .tempo-destaque { color: var(--primary); font-family: 'Courier New', monospace; font-size: 20px; font-weight: bold; }
+        .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #444; text-align: left; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="loginSection" class="card">
-        <h2 style="text-align:center; color: var(--primary);">🔰 FIBRA OS MASTER</h2>
-        <input type="text" id="userInput" placeholder="Usuário">
+        <h2 style="color: var(--primary);">🔰 FIBRA OS LOGIN</h2>
+        <p style="font-size: 12px; color: #888;">Digite os dados para acessar</p>
+        <input type="text" id="userInput" placeholder="Usuário (ex: matheus)">
         <input type="password" id="userPass" placeholder="Senha">
-        <button class="btn btn-save" onclick="validarLogin()">ENTRAR</button>
+        <button class="btn btn-save" onclick="validarLogin()">ENTRAR NO SISTEMA</button>
+        <p id="loginError" style="color: var(--danger); font-size: 13px; margin-top: 10px; display: none;">Usuário ou senha incorretos!</p>
     </div>
 
     <div id="appContent" class="hidden">
@@ -44,49 +44,49 @@
 
         <div id="tab-ranking">
             <div class="card">
-                <h3 id="displayEvento" style="color: var(--accent); text-align:center; margin-bottom: 5px;">Selecione o Torneio em "Lançar"</h3>
+                <h3 id="displayEvento" style="color: var(--accent);">Selecione o Torneio</h3>
                 <div id="listaRanking"></div>
-                <button class="btn btn-zap" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
             </div>
         </div>
 
         <div id="tab-lancar" class="hidden">
             <div class="card">
                 <h4>📍 Dados do Torneio</h4>
-                <input type="text" id="localEvento" placeholder="Ex: Campo Novo" oninput="escutarDados()">
+                <input type="text" id="localEvento" placeholder="Local (Ex: Campo Novo)" oninput="escutarDados()">
                 <input type="date" id="dataEvento" onchange="escutarDados()">
             </div>
             <div class="card">
-                <h4>🐦 Lançar Tempo (00:00:00)</h4>
+                <h4>🐦 Lançar Ave (00:00:00)</h4>
                 <input type="text" id="aveNome" placeholder="Nome da Ave">
                 <input type="text" id="aveDono" placeholder="Proprietário">
                 <input type="text" id="aveAnilha" placeholder="Número da Anilha">
                 <input type="text" id="aveTempo" placeholder="00:00:00" oninput="maskTempo(this)" maxlength="8">
-                <button class="btn btn-save" id="btnSalvar" onclick="salvarResultado()">REGISTRAR</button>
+                <button class="btn btn-save" onclick="salvarResultado()">REGISTRAR AGORA</button>
             </div>
         </div>
 
         <div id="tab-historico" class="hidden">
             <div class="card">
-                <h3>🔍 Histórico por Anilha</h3>
-                <input type="text" id="buscaAnilha" placeholder="Digite a anilha..." oninput="pesquisarAve()">
+                <h3>🔍 Histórico</h3>
+                <input type="text" id="buscaAnilha" placeholder="Anilha..." oninput="pesquisarAve()">
                 <div id="resBusca"></div>
             </div>
         </div>
 
         <div id="tab-admin" class="hidden">
             <div class="card">
-                <h3>👥 Gestão de Equipe (<span id="countUsers">0</span>)</h3>
+                <h3>👥 Gestão Master</h3>
                 <div id="listaUsuarios"></div>
-                <hr style="border:1px solid #333; margin:20px 0;">
+                <hr style="border:1px solid #333; margin:15px 0;">
                 <input type="text" id="nUser" placeholder="Novo Login">
-                <input type="text" id="nPass" placeholder="Senha">
+                <input type="text" id="nPass" placeholder="Nova Senha">
                 <select id="nRole">
                     <option value="admin">🏆 Admin</option>
                     <option value="supervisor">🔑 Supervisor</option>
                     <option value="view">👁️ Visitante</option>
                 </select>
-                <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR</button>
+                <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR NOVO USUÁRIO</button>
+                <button class="btn" style="background: #444; color: white;" onclick="location.reload()">SAIR / LOGOUT</button>
             </div>
         </div>
     </div>
@@ -106,20 +106,43 @@
     let userLogado = null;
     let dadosRanking = [];
 
+    // FUNÇÃO DE LOGIN CORRIGIDA
     async function validarLogin() {
         const u = document.getElementById('userInput').value.toLowerCase().trim();
-        const p = document.getElementById('userPass').value;
-        if(u === 'matheus' && p === 'admin123') { entrar({nome: 'matheus', role: 'admin'}); return; }
-        const snap = await db.ref('usuarios/'+u).once('value');
-        if(snap.exists() && snap.val().senha === p) { entrar(snap.val()); } else { alert("Acesso Negado!"); }
+        const p = document.getElementById('userPass').value.trim();
+        const erroMsg = document.getElementById('loginError');
+
+        // ACESSO MESTRE GARANTIDO
+        if(u === 'matheus' && p === 'admin123') {
+            entrar({nome: 'matheus', role: 'admin'});
+            return;
+        }
+
+        // BUSCA NO BANCO DE DADOS
+        try {
+            const snap = await db.ref('usuarios/' + u).once('value');
+            if(snap.exists() && snap.val().senha === p) {
+                entrar(snap.val());
+            } else {
+                erroMsg.style.display = 'block';
+            }
+        } catch(e) {
+            alert("Erro ao conectar ao banco. Verifique sua internet.");
+        }
     }
 
     function entrar(dados) {
         userLogado = dados;
         document.getElementById('loginSection').classList.add('hidden');
         document.getElementById('appContent').classList.remove('hidden');
-        if(dados.role === 'admin') { document.getElementById('link-admin').classList.remove('hidden'); listarUsuarios(); }
-        if(dados.role !== 'view') document.getElementById('link-lancar').classList.remove('hidden');
+        
+        if(dados.role === 'admin') {
+            document.getElementById('link-admin').classList.remove('hidden');
+            listarUsuarios();
+        }
+        if(dados.role !== 'view') {
+            document.getElementById('link-lancar').classList.remove('hidden');
+        }
         showTab('ranking');
     }
 
@@ -136,7 +159,7 @@
         const data = document.getElementById('dataEvento').value;
         if(!local || !data) return;
         const id = data + "_" + local.replace(/ /g,'_');
-        document.getElementById('displayEvento').innerText = local.toUpperCase() + " - " + data.split('-').reverse().join('/');
+        document.getElementById('displayEvento').innerText = local.toUpperCase();
         db.ref('torneios/'+id).on('value', snap => {
             dadosRanking = [];
             snap.forEach(c => { dadosRanking.push(c.val()); });
@@ -149,7 +172,7 @@
         const div = document.getElementById('listaRanking'); div.innerHTML = "";
         dadosRanking.forEach((p,i) => {
             let del = (userLogado.role === 'admin') ? `<button class="btn-del" onclick="excluirItem('${p.id_db}','${p.anilha}')">✘</button>` : '';
-            div.innerHTML += `<div class="ranking-item"><span><b>${i+1}º</b> ${p.nome} (${p.dono}) ${del}</span><b class="tempo-destaque">${p.tempo}</b></div>`;
+            div.innerHTML += `<div class="ranking-item"><span><b>${i+1}º</b> ${p.nome} (${p.dono}) ${del}</span><b>${p.tempo}</b></div>`;
         });
     }
 
@@ -159,8 +182,65 @@
         const anilha = document.getElementById('aveAnilha').value.toUpperCase().trim();
         const tempo = document.getElementById('aveTempo').value;
 
-        if(!local || !data || !anilha || tempo.length < 8) return alert("Erro: Preencha todos os campos e o tempo 00:00:00");
+        if(!local || !data || !anilha || tempo.length < 8) return alert("Preencha Local, Data, Anilha e Tempo!");
+
+        // VERIFICA SE JÁ EXISTE NO RANKING LOCAL (EVITA DUPLICADO)
+        if (dadosRanking.find(ave => ave.anilha === anilha)) {
+            return alert("ERRO: Esta anilha já foi registrada hoje!");
+        }
 
         const idT = data + "_" + local.replace(/ /g,'_');
+        const info = { id_db: Date.now(), nome: document.getElementById('aveNome').value, dono: document.getElementById('aveDono').value, anilha: anilha, tempo: tempo, data: data, local: local };
+        
+        db.ref('torneios/'+idT+'/'+info.id_db).set(info).then(() => {
+            db.ref('historico_aves/'+anilha+'/'+info.id_db).set(info);
+            alert("Sucesso!");
+            document.getElementById('aveNome').value = ""; document.getElementById('aveAnilha').value = ""; document.getElementById('aveTempo').value = "";
+        });
+    }
 
-        // BLOQUEIO DE ANILHA RE
+    function listarUsuarios() {
+        db.ref('usuarios').on('value', snap => {
+            const div = document.getElementById('listaUsuarios'); div.innerHTML = "";
+            snap.forEach(u => {
+                const user = u.val();
+                div.innerHTML += `<div class="ranking-item"><span>${user.nome} (${user.role})</span><button class="btn-del" onclick="excluirUsuario('${user.nome}')">✘</button></div>`;
+            });
+        });
+    }
+
+    function excluirUsuario(n) { if(n !== 'matheus' && confirm("Excluir?")) db.ref('usuarios/'+n).remove(); }
+    
+    function cadastrarUsuario() {
+        const n = document.getElementById('nUser').value.toLowerCase().trim();
+        const p = document.getElementById('nPass').value.trim();
+        if(!n || !p) return alert("Preencha tudo!");
+        db.ref('usuarios/'+n).set({nome:n, senha:p, role:document.getElementById('nRole').value});
+        alert("Usuário Criado!");
+    }
+
+    function pesquisarAve() {
+        const a = document.getElementById('buscaAnilha').value.toUpperCase();
+        if(a.length < 2) return;
+        db.ref('historico_aves/'+a).on('value', snap => {
+            const res = document.getElementById('resBusca'); res.innerHTML = "";
+            snap.forEach(c => { const r = c.val(); res.innerHTML += `<div class="ranking-item"><span>${r.data}</span><b>${r.tempo}</b></div>`; });
+        });
+    }
+
+    function showTab(t){
+        document.querySelectorAll('[id^="tab-"]').forEach(d => d.classList.add('hidden'));
+        document.getElementById('tab-'+t).classList.remove('hidden');
+        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+        document.getElementById('link-'+t).classList.add('active');
+    }
+
+    function excluirItem(id, anilha) {
+        if(!confirm("Excluir registro?")) return;
+        const idT = document.getElementById('dataEvento').value + "_" + document.getElementById('localEvento').value.replace(/ /g,'_');
+        db.ref('torneios/'+idT+'/'+id).remove();
+        db.ref('historico_aves/'+anilha+'/'+id).remove();
+    }
+</script>
+</body>
+</html>
