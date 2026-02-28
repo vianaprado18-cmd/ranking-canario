@@ -1,0 +1,33 @@
+// --- FUNÇÃO DE SALVAR (Libera para Admin e Supervisor) ---
+function salvarResultado() {
+    if (userLogado.role === 'view') {
+        alert("Visitantes não podem adicionar dados!");
+        return;
+    }
+    
+    // Lógica de salvamento normal aqui...
+}
+
+// --- FUNÇÃO DE RENDERIZAR (Libera Excluir/Editar apenas para Admin) ---
+function renderizar() {
+    dadosRanking.sort((a,b) => b.tempo.localeCompare(a.tempo));
+    const div = document.getElementById('listaRanking');
+    div.innerHTML = "<h4>TOP 10 ATUAL</h4>";
+    
+    dadosRanking.forEach((p, i) => {
+        // O botão de excluir só aparece se for ADMIN (Poder Total)
+        let botoesControle = "";
+        if (userLogado.role === 'admin') {
+            botoesControle = `
+                <button onclick="editarRegistro('${p.id_db}')" style="color: #f39c12; background:none; border:none; cursor:pointer;">✎</button>
+                <button onclick="excluirRegistro('${p.id_db}')" style="color: #e74c3c; background:none; border:none; cursor:pointer;">✘</button>
+            `;
+        }
+
+        div.innerHTML += `
+            <div class="ranking-item">
+                <span>${i+1}º ${p.nome} (${p.dono}) ${botoesControle}</span>
+                <b>${p.tempo}</b>
+            </div>`;
+    });
+}

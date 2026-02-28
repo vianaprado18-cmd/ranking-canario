@@ -1,0 +1,5 @@
+<select id="nRole">
+    <option value="admin">🏆 Administrador (Poder Total)</option>
+    <option value="supervisor">🔑 Supervisor (Lança Dados)</option>
+    <option value="view">👁️ Visitante (Apenas Ver)</option>
+</select>
