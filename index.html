@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fibra OS v16 - Gestão Master</title>
+    <title>Fibra OS v16.1 - Master</title>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     <style>
@@ -21,9 +21,7 @@
         .btn-del { background: none; border: none; color: var(--danger); cursor: pointer; font-weight: bold; padding: 5px; }
         .hidden { display: none !important; }
         .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #333; }
-        .user-item { display: flex; justify-content: space-between; padding: 8px; background: #263238; margin-bottom: 5px; border-radius: 5px; font-size: 14px; }
-        .status-badge { font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: bold; display: inline-block; margin-bottom: 10px; text-transform: uppercase; }
-        .tempo-destaque { color: var(--primary); font-family: 'Courier New', monospace; font-size: 19px; font-weight: bold; }
+        .user-item { display: flex; justify-content: space-between; padding: 10px; background: #263238; margin-bottom: 5px; border-radius: 8px; }
     </style>
 </head>
 <body>
@@ -46,64 +44,50 @@
 
         <div id="tab-ranking">
             <div class="card">
-                <div id="txtBloqueio" class="status-badge">Aguardando...</div>
-                <h3 id="displayEvento" style="margin: 5px 0; color: var(--accent);">Aguardando Torneio...</h3>
+                <h3 id="displayEvento" style="color: var(--accent);">Selecione o Torneio no Lançamento</h3>
                 <div id="listaRanking"></div>
-                <button class="btn btn-zap" onclick="compartilharZap()">🔥 COMPARTILHAR RESULTADOS</button>
+                <button class="btn btn-zap" onclick="compartilharZap()">🔥 WHATSAPP</button>
             </div>
         </div>
 
         <div id="tab-lancar" class="hidden">
             <div class="card">
-                <h4>1. Configurar Torneio</h4>
-                <select id="tipoEvento"><option value="Treino">🔰 Treino</option><option value="Torneio">🏆 Torneio</option></select>
-                <select id="catOficial">
-                    <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
-                    <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
-                    <option value="Canto Livre Adulto">Canto Livre Adulto</option>
-                    <option value="Canto Livre Filhote">Canto Livre Filhote</option>
-                    <option value="Peito de Aço Adulto">Peito de Aço Adulto</option>
-                    <option value="Peito de Aço Filhote">Peito de Aço Filhote</option>
-                </select>
+                <h4>Configurar Torneio</h4>
                 <input type="text" id="localEvento" placeholder="Cidade / Local" oninput="escutarDados()">
                 <input type="date" id="dataEvento" onchange="verificarBloqueio()">
-                <div style="display:flex; gap:5px">
-                    <input type="text" id="tempoAdp" placeholder="ADP (ex: 45)">
-                    <input type="text" id="qtdElim" placeholder="Eliminatórias (ex: 2)">
-                </div>
             </div>
             <div class="card">
-                <h4>2. Lançar Ave</h4>
+                <h4>Lançar Ave</h4>
                 <input type="text" id="aveNome" placeholder="Nome da Ave">
                 <input type="text" id="aveDono" placeholder="Proprietário">
                 <input type="text" id="aveAnilha" placeholder="Anilha">
                 <input type="text" id="aveTempo" placeholder="00:00.0" oninput="maskTempo(this)" maxlength="7">
-                <button id="btnSalvar" class="btn btn-save" onclick="salvarResultado()">REGISTRAR</button>
+                <button id="btnSalvar" class="btn btn-save" onclick="salvarResultado()">SALVAR</button>
             </div>
         </div>
 
         <div id="tab-historico" class="hidden">
             <div class="card">
-                <h3>🔍 Busca por Anilha</h3>
+                <h3>🔍 Histórico</h3>
                 <input type="text" id="buscaAnilha" placeholder="Digite a anilha..." oninput="pesquisarAve()">
-                <div id="resBusca" style="margin-top:15px"></div>
+                <div id="resBusca"></div>
             </div>
         </div>
 
         <div id="tab-admin" class="hidden">
             <div class="card">
                 <h3>👥 Novo Usuário</h3>
-                <input type="text" id="nUser" placeholder="Nome">
+                <input type="text" id="nUser" placeholder="Usuário">
                 <input type="text" id="nPass" placeholder="Senha">
                 <select id="nRole">
-                    <option value="admin">🏆 Admin (Total)</option>
-                    <option value="supervisor">🔑 Supervisor (Lançar)</option>
-                    <option value="view">👁️ Visitante (Ver)</option>
+                    <option value="admin">🏆 Admin</option>
+                    <option value="supervisor">🔑 Supervisor</option>
+                    <option value="view">👁️ Visitante</option>
                 </select>
-                <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR ACESSO</button>
+                <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR</button>
             </div>
             <div class="card">
-                <h3>👥 Gerenciar Equipe (<span id="countUsers">0</span>)</h3>
+                <h3>👥 Equipe (<span id="countUsers">0</span>)</h3>
                 <div id="listaUsuarios"></div>
             </div>
         </div>
@@ -111,6 +95,7 @@
 </div>
 
 <script>
+    // CHAVES DO SEU PROJETO
     const firebaseConfig = {
         apiKey: "AIzaSyBDHnCwjz-1yFmq_Cg-3WJk-Pscw_i0YRk",
         authDomain: "ranking-canarios.firebaseapp.com",
@@ -118,4 +103,98 @@
         projectId: "ranking-canarios",
         appId: "1:911292378909:web:5ec1324127b917a1c63bf4"
     };
-    firebase.initializeApp
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let userLogado = null;
+    let dadosRanking = [];
+
+    async function validarLogin() {
+        const u = document.getElementById('userInput').value.toLowerCase().trim();
+        const p = document.getElementById('userPass').value;
+        if(u === 'matheus' && p === 'admin123') { entrar({nome: 'matheus', role: 'admin'}); return; }
+        const snap = await db.ref('usuarios/'+u).once('value');
+        if(snap.exists() && snap.val().senha === p) { entrar(snap.val()); } else { alert("Acesso Negado!"); }
+    }
+
+    function entrar(dados) {
+        userLogado = dados;
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('appContent').classList.remove('hidden');
+        if(dados.role === 'admin') {
+            document.getElementById('link-admin').classList.remove('hidden');
+            listarUsuarios(); 
+        }
+        if(dados.role !== 'view') document.getElementById('link-lancar').classList.remove('hidden');
+        showTab('ranking');
+    }
+
+    function maskTempo(i) {
+        let v = i.value.replace(/\D/g,'');
+        if(v.length >= 5) v = v.replace(/^(\d{2})(\d{2})(\d{1})/, "$1:$2.$3");
+        else if(v.length >= 3) v = v.replace(/^(\d{2})(\d{2})/, "$1:$2");
+        i.value = v;
+    }
+
+    function escutarDados() {
+        const local = document.getElementById('localEvento').value;
+        const data = document.getElementById('dataEvento').value;
+        const id = data + "_" + local.replace(/ /g,'_');
+        document.getElementById('displayEvento').innerText = `${data.split('-').reverse().join('/')} - ${local}`;
+        db.ref('torneios/'+id).on('value', snap => {
+            dadosRanking = [];
+            snap.forEach(c => { dadosRanking.push(c.val()); });
+            renderizar();
+        });
+    }
+
+    function renderizar() {
+        dadosRanking.sort((a,b) => b.tempo.localeCompare(a.tempo));
+        const div = document.getElementById('listaRanking'); div.innerHTML = "";
+        dadosRanking.forEach((p,i) => {
+            let del = (userLogado.role === 'admin') ? `<button class="btn-del" onclick="excluirItem('${p.id_db}','${p.anilha}')">✘</button>` : '';
+            div.innerHTML += `<div class="ranking-item"><span><b>${i+1}º</b> ${p.nome} (${p.dono}) ${del}</span><b>${p.tempo}</b></div>`;
+        });
+    }
+
+    function salvarResultado() {
+        const local = document.getElementById('localEvento').value;
+        const data = document.getElementById('dataEvento').value;
+        const anilha = document.getElementById('aveAnilha').value.toUpperCase().trim();
+        const tempo = document.getElementById('aveTempo').value;
+        if(!local || !data || !anilha || tempo.length < 7) return alert("Erro nos dados!");
+        const idT = data + "_" + local.replace(/ /g,'_');
+        const info = { id_db: Date.now(), nome: document.getElementById('aveNome').value, dono: document.getElementById('aveDono').value, anilha: anilha, tempo: tempo, data: data, local: local };
+        db.ref('torneios/'+idT+'/'+info.id_db).set(info);
+        db.ref('historico_aves/'+anilha+'/'+info.id_db).set(info);
+        alert("Salvo!");
+    }
+
+    function listarUsuarios() {
+        db.ref('usuarios').on('value', snap => {
+            const div = document.getElementById('listaUsuarios');
+            const count = document.getElementById('countUsers');
+            div.innerHTML = ""; let i = 0;
+            snap.forEach(u => {
+                i++; const user = u.val();
+                div.innerHTML += `<div class="user-item"><span>${user.nome}</span><button class="btn-del" onclick="excluirUsuario('${user.nome}')">✘</button></div>`;
+            });
+            count.innerText = i;
+        });
+    }
+
+    function excluirUsuario(n) { if(confirm("Remover "+n+"?")) db.ref('usuarios/'+n).remove(); }
+    function cadastrarUsuario() {
+        const n = document.getElementById('nUser').value.toLowerCase().trim();
+        db.ref('usuarios/'+n).set({nome:n, senha:document.getElementById('nPass').value, role:document.getElementById('nRole').value});
+        alert("Criado!");
+    }
+    function showTab(t){
+        document.querySelectorAll('[id^="tab-"]').forEach(d => d.classList.add('hidden'));
+        document.getElementById('tab-'+t).classList.remove('hidden');
+        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+        document.getElementById('link-'+t).classList.add('active');
+    }
+</script>
+</body>
+</html>
