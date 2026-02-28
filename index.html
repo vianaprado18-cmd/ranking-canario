@@ -26,7 +26,7 @@
 
 <div class="container">
     <div id="loginSection" class="card">
-        <h2 style="color: var(--primary);">🔰 FIBRA OS LOGIN</h2>
+        <h2 style="color: var(--primary);">🔰 FIBRA LOGIN</h2>
         <p style="font-size: 12px; color: #888;">Digite os dados para acessar</p>
         <input type="text" id="userInput" placeholder="Usuário (ex: matheus)">
         <input type="password" id="userPass" placeholder="Senha">
@@ -46,6 +46,7 @@
             <div class="card">
                 <h3 id="displayEvento" style="color: var(--accent);">Selecione o Torneio</h3>
                 <div id="listaRanking"></div>
+<button class="btn btn-zap" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
             </div>
         </div>
 
@@ -241,6 +242,34 @@
         db.ref('torneios/'+idT+'/'+id).remove();
         db.ref('historico_aves/'+anilha+'/'+id).remove();
     }
+function compartilharZap() {
+    const local = document.getElementById('localEvento').value || "Torneio";
+    const dataInput = document.getElementById('dataEvento').value;
+    const dataBr = dataInput ? dataInput.split('-').reverse().join('/') : "";
+    
+    if (dadosRanking.length === 0) {
+        return alert("O ranking está vazio! Lance as aves primeiro.");
+    }
+
+    // Montando o cabeçalho da mensagem
+    let mensagem = `🏆 *RANKING FIBRA - ${local.toUpperCase()}* 🏆\n`;
+    if(dataBr) mensagem += `📅 DATA: ${dataBr}\n`;
+    mensagem += `\n--------------------------\n`;
+
+    // Adicionando cada ave do ranking (Top 10 ou todos)
+    dadosRanking.forEach((p, i) => {
+        mensagem += `*${i + 1}º* ${p.nome.toUpperCase()}\n`;
+        mensagem += `👤 ${p.dono} | ⏱️ *${p.tempo}*\n\n`;
+    });
+
+    mensagem += `--------------------------\n_Gerado por Fibra OS 🔰_`;
+
+    // O encodeURIComponent é essencial para o WhatsApp entender quebras de linha e emojis
+    const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensagem);
+    
+    // Abre em uma nova aba
+    window.open(url, '_blank');
+}
 </script>
 </body>
 </html>
