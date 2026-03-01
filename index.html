@@ -47,18 +47,39 @@
             <div id="link-admin" class="tab-link hidden" onclick="showTab('admin')">⚙️ Matheus</div>
         </div>
 
-        <div id="tab-ranking">
-            <div class="card">
-                <h3 style="color: var(--accent);">📊 Consultar Resultados</h3>
-                <input type="text" id="filtroLocal" placeholder="Local (Ex: Campo Novo)">
-                <input type="date" id="filtroData">
-                <button class="btn" style="background: var(--accent); color: white;" onclick="buscarRankingAntigo()">CARREGAR RANKING</button>
-                <hr style="border: 0.5px solid #333; margin: 20px 0;">
-                <h3 id="displayEvento" style="color: var(--primary);">Selecione o Torneio</h3>
-                <div id="listaRanking"></div>
-                <button class="btn btn-zap" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
+        <div id="tab-admin" class="hidden">
+    <div class="card" style="border: 1px solid var(--primary);">
+        <h3 style="color: var(--primary);">👥 Gestão de Usuários</h3>
+        <p style="font-size: 12px; color: #888;">Usuários cadastrados no sistema:</p>
+        <div id="listaUsuarios" style="max-height: 200px; overflow-y: auto; margin-bottom: 15px;">
             </div>
-        </div>
+        
+        <hr style="border: 0.5px solid #333; margin: 15px 0;">
+        
+        <h4>➕ Adicionar Novo Usuário</h4>
+        <input type="text" id="nUser" placeholder="Login (ex: joao123)">
+        <input type="text" id="nPass" placeholder="Senha">
+        <select id="nRole">
+            <option value="admin">🏆 Administrador (Acesso Total)</option>
+            <option value="supervisor">🔑 Supervisor (Lança Tempos)</option>
+            <option value="view">👁️ Visitante (Só Vê Ranking)</option>
+        </select>
+        <button class="btn btn-save" onclick="cadastrarUsuario()">CADASTRAR AGORA</button>
+    </div>
+
+    <div class="card" style="border: 1px solid var(--accent);">
+        <h3 style="color: var(--accent);">📅 Configurar Torneio Oficial</h3>
+        <input type="text" id="addLocal" placeholder="Local do Torneio">
+        <input type="date" id="addData">
+        <input type="text" id="addJuiz" placeholder="Nome do Juiz">
+        <button class="btn" style="background: var(--accent); color: white;" onclick="criarTorneio()">CRIAR EVENTO</button>
+        
+        <div id="listaTorneiosCriados" style="margin-top: 15px; text-align: left;">
+            </div>
+    </div>
+    
+    <button class="btn" style="background: #444; margin-top: 20px;" onclick="location.reload()">SAIR / LOGOUT</button>
+</div>
 
         <div id="tab-torneios" class="hidden">
             <div class="card">
@@ -171,17 +192,39 @@
     }
 
     function entrar(dados) {
-        userLogado = dados;
-        document.getElementById('loginSection').classList.add('hidden');
-        document.getElementById('appContent').classList.remove('hidden');
-        if(dados.role === 'admin') {
-            document.getElementById('link-admin').classList.remove('hidden');
-            listarUsuarios();
-            listarTorneios();
-        }
-        if(dados.role !== 'view') document.getElementById('link-lancar').classList.remove('hidden');
-        showTab('ranking');
+    userLogado = dados;
+    document.getElementById('loginSection').classList.add('hidden');
+    document.getElementById('appContent').classList.remove('hidden');
+    
+    // Se for o Matheus, libera a aba Admin e carrega as listas
+    if(dados.role === 'admin') {
+        document.getElementById('link-admin').classList.remove('hidden');
+        listarUsuarios(); // Carrega os usuários na tela
+        listarTorneios(); // Carrega os torneios na tela
     }
+    
+    if(dados.role !== 'view') document.getElementById('link-lancar').classList.remove('hidden');
+    showTab('ranking');
+}
+
+function listarUsuarios() {
+    db.ref('usuarios').on('value', snap => {
+        const div = document.getElementById('listaUsuarios'); 
+        div.innerHTML = "";
+        if(!snap.exists()) {
+            div.innerHTML = "<p style='color:#666'>Nenhum usuário extra.</p>";
+            return;
+        }
+        snap.forEach(u => {
+            const user = u.val();
+            div.innerHTML += `
+                <div class="ranking-item" style="background: #1a1a1a; margin-bottom: 5px; padding: 10px;">
+                    <span><b>${user.nome}</b> (${user.role})</span>
+                    <button class="btn-del" onclick="excluirUsuario('${u.key}')">Excluir ✘</button>
+                </div>`;
+        });
+    });
+}
 
     function showTab(t){
         document.querySelectorAll('[id^="tab-"]').forEach(d => d.classList.add('hidden'));
