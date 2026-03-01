@@ -337,11 +337,10 @@ if(t === 'agenda') carregarAgenda();
         const idT = data + "_" + local.replace(/ /g,'_');
         db.ref('lista_de_torneios/' + idT).set({
             local: local, data: data, juiz: juiz, limite: parseInt(limite), id: idT
-        }).then(() => alert("Torneio Criado!"));
-// Adicione isso dentro do .then da função criarTorneio
-const btnOriginal = document.querySelector('#areaMasterTorneios .btn');
+        }).then((const btnOriginal = document.querySelector('#areaMasterTorneios .btn');
 btnOriginal.innerText = "CRIAR TORNEIO OFICIAL";
-btnOriginal.style.background = "var(--accent)";
+btnOriginal.style.background = "var(--accent)";) => alert("Torneio Criado!"));
+
     }
 
     function listarTorneios() {
