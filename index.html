@@ -97,6 +97,13 @@
                 </select>
                 <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR USUÁRIO</button>
                 <button class="btn" style="background: #444;" onclick="location.reload()">SAIR</button>
+<div class="card" style="border: 1px solid var(--accent); margin-top: 20px;">
+    <h3 style="color: var(--accent);">📅 Adicionar Novo Torneio</h3>
+    <input type="text" id="addLocal" placeholder="Nome do Torneio (ex: Regional 2026)">
+    <input type="date" id="addData">
+    <button class="btn" style="background: var(--accent); color: white;" onclick="criarTorneio()">CRIAR TORNEIO OFICIAL</button>
+    <div id="listaTorneiosCriados" style="margin-top: 15px; font-size: 13px; text-align: left;"></div>
+</div>
             </div>
         </div>
     </div>
@@ -298,5 +305,36 @@
         db.ref('historico_aves/'+anilha+'/'+id).remove();
     }
 </script>
+// Função para o Matheus criar o torneio no banco de dados
+function criarTorneio() {
+    const local = document.getElementById('addLocal').value.trim();
+    const data = document.getElementById('addData').value;
+
+    if(!local || !data) return alert("Preencha o nome e a data do torneio!");
+
+    const idT = data + "_" + local.replace(/ /g,'_');
+    
+    // Salva uma referência do torneio para aparecer na lista
+    db.ref('lista_de_torneios/' + idT).set({
+        local: local,
+        data: data,
+        id: idT
+    }).then(() => {
+        alert("Torneio criado com sucesso!");
+        document.getElementById('addLocal').value = "";
+    });
+}
+
+// Função para listar os torneios criados (chame isso dentro da função entrar() se for admin)
+function listarTorneios() {
+    db.ref('lista_de_torneios').on('value', snap => {
+        const div = document.getElementById('listaTorneiosCriados');
+        div.innerHTML = "<b>Torneios Ativos:</b><br>";
+        snap.forEach(t => {
+            const tor = t.val();
+            div.innerHTML += `📍 ${tor.local} (${tor.data.split('-').reverse().join('/')}) <br>`;
+        });
+    });
+}
 </body>
 </html>
