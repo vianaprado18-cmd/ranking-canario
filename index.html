@@ -38,83 +38,71 @@
     <div id="appContent" class="hidden">
         <div class="nav-tabs">
             <div id="link-ranking" class="tab-link active" onclick="showTab('ranking')">🏆 Ranking</div>
+            <div id="link-torneios" class="tab-link" onclick="showTab('torneios')">📅 Agenda</div>
             <div id="link-lancar" class="tab-link hidden" onclick="showTab('lancar')">⏱️ Lançar</div>
             <div id="link-historico" class="tab-link" onclick="showTab('historico')">📊 Histórico</div>
             <div id="link-admin" class="tab-link hidden" onclick="showTab('admin')">⚙️ Matheus</div>
-<div id="link-torneios" class="tab-link" onclick="showTab('torneios')">🏆 Torneios</div>
         </div>
-<div id="tab-torneios" class="hidden">
-    <div class="card">
-        <h3 style="color: var(--accent);">🏆 Torneios Disponíveis</h3>
-        <p style="font-size: 13px; color: #888;">Selecione um torneio para cadastrar sua ave</p>
-        <div id="listaTorneiosPublicos"></div>
-    </div>
-
-    <div id="janelaInscricao" class="card hidden" style="border: 2px solid var(--primary);">
-        <h4 id="nomeTorneioSelecionado" style="color: var(--primary);"></h4>
-        <input type="text" id="insaveDono" readonly style="background: #1a1a1a; color: #aaa;">
-        <input type="text" id="insaveNome" placeholder="Nome do Canário">
-        <input type="text" id="insaveAnilha" placeholder="Anilha (Ex: ABC 123)">
-        <select id="insaveCategoria">
-            <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
-            <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
-            <option value="Canto Livre">Canto Livre</option>
-        </select>
-        <button class="btn btn-save" onclick="confirmarInscricao()">FINALIZAR INSCRIÇÃO</button>
-        <button class="btn" style="background:#444;" onclick="fecharInscricao()">CANCELAR</button>
-    </div>
-</div>
 
         <div id="tab-ranking">
-    <div class="card">
-        <h3 style="color: var(--accent);">📊 Consultar Resultados</h3>
-        <p style="font-size: 12px; color: #888;">Selecione para carregar o ranking e enviar ao Zap</p>
-        
-        <input type="text" id="filtroLocal" placeholder="Local (Ex: Campo Novo)">
-        <input type="date" id="filtroData">
-        <button class="btn" style="background: var(--accent); color: white;" onclick="buscarRankingAntigo()">CARREGAR RANKING</button>
-        
-        <hr style="border: 0.5px solid #333; margin: 20px 0;">
-        
-        <h3 id="displayEvento" style="color: var(--primary);">Selecione um evento</h3>
-        <div id="listaRanking"></div>
-        <button class="btn btn-zap" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
-    </div>
-</div>
+            <div class="card">
+                <h3 style="color: var(--accent);">📊 Consultar Resultados</h3>
+                <input type="text" id="filtroLocal" placeholder="Local (Ex: Campo Novo)">
+                <input type="date" id="filtroData">
+                <button class="btn" style="background: var(--accent); color: white;" onclick="buscarRankingAntigo()">CARREGAR RANKING</button>
+                <hr style="border: 0.5px solid #333; margin: 20px 0;">
+                <h3 id="displayEvento" style="color: var(--primary);">Selecione um evento</h3>
+                <div id="listaRanking"></div>
+                <button class="btn btn-zap" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
+            </div>
+        </div>
+
+        <div id="tab-torneios" class="hidden">
+            <div class="card">
+                <h3 style="color: var(--accent);">🏆 Torneios Disponíveis</h3>
+                <div id="listaTorneiosPublicos"></div>
+            </div>
+            <div id="janelaInscricao" class="card hidden" style="border: 2px solid var(--primary);">
+                <h4 id="nomeTorneioSelecionado" style="color: var(--primary);"></h4>
+                <input type="text" id="insaveDono" readonly style="background: #1a1a1a; color: #aaa;">
+                <input type="text" id="insaveNome" placeholder="Nome do Canário">
+                <input type="text" id="insaveAnilha" placeholder="Anilha (Ex: ABC 123 25)">
+                <select id="insaveCategoria">
+                    <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
+                    <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
+                </select>
+                <button class="btn btn-save" onclick="confirmarInscricao()">FINALIZAR INSCRIÇÃO</button>
+                <button class="btn" style="background:#444;" onclick="fecharInscricao()">CANCELAR</button>
             </div>
         </div>
 
         <div id="tab-lancar" class="hidden">
             <div class="card">
                 <h4>📍 Dados do Evento</h4>
-                <select id="tipoEvento" onchange="escutarDados()">
+                <select id="tipoEvento">
                     <option value="Torneio">🏆 Torneio Oficial</option>
                     <option value="Treino">⏱️ Treino Livre</option>
                 </select>
-                <input type="text" id="localEvento" placeholder="Local (Ex: Campo Novo)" oninput="escutarDados()">
+                <input type="text" id="localEvento" placeholder="Local" oninput="escutarDados()">
                 <input type="date" id="dataEvento" onchange="escutarDados()">
-                <select id="aveCategoria">
-                    <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
-                    <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
-                    <option value="Canto Livre Adulto">Canto Livre Adulto</option>
-                    <option value="Canto Livre Filhote">Canto Livre Filhote</option>
-                    <option value="Peito de Aço Adulto">Peito de Aço Adulto</option>
-                    <option value="Peito de Aço Filhote">Peito de Aço Filhote</option>
-                </select>
             </div>
             <div class="card">
-                <h4>🐦 Registro da Ave</h4>
+                <h4>🐦 Registro Manual</h4>
                 <input type="text" id="aveNome" placeholder="Nome da Ave">
                 <input type="text" id="aveDono" placeholder="Proprietário">
                 <input type="text" id="aveAnilha" placeholder="Anilha">
+                <select id="aveCategoria">
+                    <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
+                    <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
+                </select>
                 <input type="text" id="aveTempo" placeholder="00:00:00" oninput="maskTempo(this)" maxlength="8">
-                <button class="btn btn-save" onclick="salvarResultado()">REGISTRAR AGORA</button>
+                <button class="btn btn-save" id="btnSalvarManual" onclick="salvarResultado()">REGISTRAR AGORA</button>
             </div>
         </div>
 
         <div id="tab-historico" class="hidden">
             <div class="card">
-                <h3>🔍 Histórico</h3>
+                <h3>🔍 Histórico por Anilha</h3>
                 <input type="text" id="buscaAnilha" placeholder="Anilha..." oninput="pesquisarAve()">
                 <div id="resBusca"></div>
             </div>
@@ -124,7 +112,6 @@
             <div class="card">
                 <h3>👥 Gestão de Usuários</h3>
                 <div id="listaUsuarios"></div>
-                <hr style="border:1px solid #333; margin:15px 0;">
                 <input type="text" id="nUser" placeholder="Login">
                 <input type="text" id="nPass" placeholder="Senha">
                 <select id="nRole">
@@ -133,19 +120,18 @@
                     <option value="view">👁️ Visitante</option>
                 </select>
                 <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR USUÁRIO</button>
-
-                <div id="areaMasterTorneios" class="card hidden" style="border: 1px solid var(--accent); margin-top: 20px; background: #222;">
-                    <h3 style="color: var(--accent);">📅 Configurar Torneio Oficial</h3>
-                    <input type="text" id="addLocal" placeholder="Local do Torneio">
-                    <input type="date" id="addData">
-                    <input type="text" id="addJuiz" placeholder="Nome do Juiz">
-                    <input type="number" id="addLimite" placeholder="Limite Máximo de Aves">
-                    <button class="btn" style="background: var(--accent); color: white;" onclick="criarTorneio()">CRIAR TORNEIO</button>
-                    <div id="listaTorneiosCriados" style="margin-top: 15px; font-size: 13px; text-align: left;"></div>
-                </div>
-                
-                <button class="btn" style="background: #444; margin-top: 20px;" onclick="location.reload()">SAIR / LOGOUT</button>
             </div>
+
+            <div id="areaMasterTorneios" class="card" style="border: 1px solid var(--accent); background: #222;">
+                <h3 style="color: var(--accent);">📅 Configurar Torneio Oficial</h3>
+                <input type="text" id="addLocal" placeholder="Local do Torneio">
+                <input type="date" id="addData">
+                <input type="text" id="addJuiz" placeholder="Nome do Juiz">
+                <input type="number" id="addLimite" placeholder="Limite de Aves">
+                <button class="btn" id="btnCriarTorneio" style="background: var(--accent); color: white;" onclick="criarTorneio()">CRIAR TORNEIO</button>
+                <div id="listaTorneiosCriados" style="margin-top: 15px; font-size: 13px; text-align: left;"></div>
+            </div>
+            <button class="btn" style="background: #444; margin-top: 20px;" onclick="location.reload()">SAIR / LOGOUT</button>
         </div>
     </div>
 </div>
@@ -163,461 +149,226 @@
 
     let userLogado = null;
     let dadosRanking = [];
+    let torneioAtivoId = null;
 
+    // --- LOGIN ---
     async function validarLogin() {
         const u = document.getElementById('userInput').value.toLowerCase().trim();
         const p = document.getElementById('userPass').value.trim();
-        const erroMsg = document.getElementById('loginError');
-
-        if(u === 'matheus' && p === 'admin123') {
-            entrar({nome: 'matheus', role: 'admin'});
-            return;
-        }
-
-        try {
-            const snap = await db.ref('usuarios/' + u).once('value');
-            if(snap.exists() && snap.val().senha === p) {
-                entrar(snap.val());
-            } else {
-                erroMsg.style.display = 'block';
-            }
-        } catch(e) { alert("Erro de conexão."); }
+        if(u === 'matheus' && p === 'admin123') { entrar({nome: 'matheus', role: 'admin'}); return; }
+        const snap = await db.ref('usuarios/' + u).once('value');
+        if(snap.exists() && snap.val().senha === p) entrar(snap.val());
+        else document.getElementById('loginError').style.display = 'block';
     }
 
     function entrar(dados) {
         userLogado = dados;
         document.getElementById('loginSection').classList.add('hidden');
         document.getElementById('appContent').classList.remove('hidden');
-
-        if(dados.nome === 'matheus' && dados.role === 'admin') {
+        if(dados.role === 'admin') {
             document.getElementById('link-admin').classList.remove('hidden');
-            document.getElementById('areaMasterTorneios').classList.remove('hidden');
             listarUsuarios();
             listarTorneios();
         }
-        
         if(dados.role !== 'view') document.getElementById('link-lancar').classList.remove('hidden');
         showTab('ranking');
     }
 
-    function maskTempo(i) {
-        let v = i.value.replace(/\D/g,'');
-        if (v.length > 6) v = v.substring(0, 6);
-        if (v.length >= 5) v = v.replace(/^(\d{2})(\d{2})(\d{1,2})/, "$1:$2:$3");
-        else if (v.length >= 3) v = v.replace(/^(\d{2})(\d{1,2})/, "$1:$2");
-        i.value = v;
-    }
-function escutarDados() {
-    const local = document.getElementById('localEvento').value.trim();
-    const data = document.getElementById('dataEvento').value;
-    const tipo = document.getElementById('tipoEvento').value;
-if(t === 'agenda') carregarAgenda();
-    if(!local || !data) return;
-
-    // Criando o ID oficial (Ex: 2026-02-28_Campo_Novo)
-    const id = data + "_" + local.replace(/ /g,'_');
-    
-    console.log("Buscando dados no ID:", id); // Isso ajuda a descobrir erros
-
-    document.getElementById('displayEvento').innerText = tipo.toUpperCase() + ": " + local.toUpperCase();
-
-    // Referência correta no Firebase
-    db.ref('torneios/' + id).on('value', snap => {
-        dadosRanking = [];
-        snap.forEach(c => { 
-            dadosRanking.push(c.val()); 
-        });
-        renderizar(); // Chama a função para desenhar na tela
-    });
-}
-    function renderizar() {
-        dadosRanking.sort((a,b) => b.tempo.localeCompare(a.tempo));
-        const div = document.getElementById('listaRanking');
-        div.innerHTML = "";
-        if(dadosRanking.length === 0) {
-            div.innerHTML = "<p style='color:#666;'>Nenhum registro encontrado.</p>";
-            return;
-        }
-        dadosRanking.forEach((p,i) => {
-            let del = (userLogado.role === 'admin') ? `<button class="btn-del" onclick="excluirItem('${p.id_db}','${p.anilha}')">✘</button>` : '';
-            div.innerHTML += `<div class="ranking-item">
-                <span><b>${i+1}º</b> ${p.nome.toUpperCase()} (${p.dono}) <br><small>${p.categoria} | Juiz: ${p.juiz || '---'}</small></span>
-                <span class="tempo-destaque">${p.tempo} ${del}</span>
-            </div>`;
-        });
-    }
-
-    async function salvarResultado() {
-    const local = document.getElementById('localEvento').value.trim();
-    const data = document.getElementById('dataEvento').value;
-    const tipo = document.getElementById('tipoEvento').value;
-    
-    if(!local || !data) return alert("Selecione o Local e a Data primeiro!");
-
-    const idT = data + "_" + local.replace(/ /g,'_');
-    let juizAtual = "---"; // Padrão para treino
-
-    // Só busca Juiz e valida limite se for TORNEIO
-    if(tipo === "Torneio") {
-        const snapConfig = await db.ref('lista_de_torneios/' + idT).once('value');
-        const config = snapConfig.val();
-        
-        if(!config) {
-            return alert("Este torneio não foi criado pelo Matheus na aba Admin!");
-        }
-
-        if(dadosRanking.length >= config.limite) {
-            return alert("❌ LIMITE ATINGIDO: Máximo de " + config.limite + " aves!");
-        }
-        juizAtual = config.juiz;
-// Use o .trim() para evitar que um espaço invisível quebre o link com o banco
-    const local = document.getElementById('localEvento').value.trim();
-    const data = document.getElementById('dataEvento').value;
-    
-    if(!local || !data) return alert("Defina Local e Data!");
-
-    const idT = data + "_" + local.replace(/ /g,'_');
-    
-    // ... restante do seu código de salvar ...
-    }
-
-    const anilha = document.getElementById('aveAnilha').value.toUpperCase().trim();
-    const tempo = document.getElementById('aveTempo').value;
-    const nomeAve = document.getElementById('aveNome').value.trim();
-    const dono = document.getElementById('aveDono').value.trim();
-    const categoria = document.getElementById('aveCategoria').value;
-
-    if(!anilha || tempo.length < 5 || !nomeAve) return alert("Preencha os dados da ave!");
-
-    // IMPORTANTE: Criamos um ID ÚNICO baseado no tempo para evitar duplicação por clique duplo
-    const idUnico = Date.now(); 
-
-    const info = { 
-        id_db: idUnico, 
-        nome: nomeAve, 
-        dono: dono, 
-        anilha: anilha, 
-        tempo: tempo, 
-        categoria: categoria,
-        tipo: tipo,
-        juiz: juizAtual, // Aqui ele salva o Juiz ou o "---" do treino
-        data: data, 
-        local: local 
-    };
-    
-    // Bloqueia o botão temporariamente para evitar múltiplos cliques
-    const btn = document.querySelector('.btn-save');
-    btn.disabled = true;
-    btn.innerText = "SALVANDO...";
-
-    db.ref('torneios/'+idT+'/'+idUnico).set(info).then(() => {
-        db.ref('historico_aves/'+anilha+'/'+idUnico).set(info);
-        alert("✅ Registrado com sucesso!");
-        
-        // Limpa os campos para o próximo registro
-        document.getElementById('aveNome').value = ""; 
-        document.getElementById('aveAnilha').value = ""; 
-        document.getElementById('aveTempo').value = "";
-        
-        btn.disabled = false;
-        btn.innerText = "REGISTRAR AGORA";
-    }).catch(err => {
-        btn.disabled = false;
-        btn.innerText = "REGISTRAR AGORA";
-        alert("Erro ao salvar!");
-    });
-}
-
-    function criarTorneio() {
-        const local = document.getElementById('addLocal').value.trim();
-        const data = document.getElementById('addData').value;
-        const juiz = document.getElementById('addJuiz').value.trim();
-        const limite = document.getElementById('addLimite').value;
-        if(!local || !data || !juiz || !limite) return alert("Preencha tudo!");
-        const idT = data + "_" + local.replace(/ /g,'_');
-        db.ref('lista_de_torneios/' + idT).set({
-            local: local, data: data, juiz: juiz, limite: parseInt(limite), id: idT
-        }).then(() => alert("Torneio Criado!"));
-
-    }
-
-    function listarTorneios() {
-        db.ref('lista_de_torneios').on('value', snap => {
-            const div = document.getElementById('listaTorneiosCriados');
-            div.innerHTML = "<b>Torneios Ativos:</b><br>";
-            snap.forEach(t => {
-                const tor = t.val();
-                div.innerHTML += `📍 ${tor.local} (${tor.data}) - Juiz: ${tor.juiz}<br>`;
-            });
-        });
-    }
-
-   function compartilharZap() {
-    const local = document.getElementById('localEvento').value.trim() || "Não Informado";
-    const dataInput = document.getElementById('dataEvento').value;
-    const dataBr = dataInput ? dataInput.split('-').reverse().join('/') : "";
-    const tipo = document.getElementById('tipoEvento').value;
-    
-    if (dadosRanking.length === 0) {
-        return alert("O ranking está vazio! Certifique-se de que as aves aparecem na tela antes de compartilhar.");
-    }
-
-    // Ordenar por tempo antes de enviar (Garantia extra)
-    dadosRanking.sort((a, b) => b.tempo.localeCompare(a.tempo));
-
-    // Montando o cabeçalho
-    let emoji = (tipo === "Torneio") ? "🏆" : "⏱️";
-    let mensagem = `${emoji} *${tipo.toUpperCase()}: ${local.toUpperCase()}* ${emoji}\n`;
-    if(dataBr) mensagem += `📅 DATA: ${dataBr}\n`;
-    mensagem += `\n--------------------------\n\n`;
-
-    // Listando as aves
-    dadosRanking.forEach((p, i) => {
-        mensagem += `*${i + 1}º* ${p.nome.toUpperCase()}\n`;
-        mensagem += `⏱️ *${p.tempo}* | ${p.categoria}\n`;
-        mensagem += `👤 ${p.dono}\n`;
-        
-        // Só adiciona o Juiz se for Torneio e o campo não estiver vazio
-        if(tipo === "Torneio" && p.juiz && p.juiz !== "---") {
-            mensagem += `👨‍⚖️ Juiz: ${p.juiz}\n`;
-        }
-        mensagem += `\n`;
-    });
-
-    mensagem += `--------------------------\n_Gerado por Fibra OS 🔰_`;
-
-    // Envio para o WhatsApp
-    const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensagem);
-    window.open(url, '_blank');
-}
-
-    function listarUsuarios() {
-        db.ref('usuarios').on('value', snap => {
-            const div = document.getElementById('listaUsuarios'); div.innerHTML = "";
-            snap.forEach(u => {
-                const user = u.val();
-                div.innerHTML += `<div class="ranking-item"><span>${user.nome}</span><button class="btn-del" onclick="excluirUsuario('${user.nome}')">✘</button></div>`;
-            });
-        });
-    }
-
-    function cadastrarUsuario() {
-        const n = document.getElementById('nUser').value.toLowerCase().trim();
-        const p = document.getElementById('nPass').value.trim();
-        if(!n || !p) return alert("Preencha tudo!");
-        db.ref('usuarios/'+n).set({nome:n, senha:p, role:document.getElementById('nRole').value});
-        alert("Criado!");
-    }
-
-    function excluirUsuario(n) { if(n !== 'matheus' && confirm("Excluir?")) db.ref('usuarios/'+n).remove(); }
-
-    function pesquisarAve() {
-        const a = document.getElementById('buscaAnilha').value.toUpperCase();
-        if(a.length < 2) return;
-        db.ref('historico_aves/'+a).on('value', snap => {
-            const res = document.getElementById('resBusca'); res.innerHTML = "";
-            snap.forEach(c => { const r = c.val(); res.innerHTML += `<div class="ranking-item"><span>${r.data} - ${r.local}</span><b>${r.tempo}</b></div>`; });
-        });
-    }
-
+    // --- FUNÇÕES CORE ---
     function showTab(t){
         document.querySelectorAll('[id^="tab-"]').forEach(d => d.classList.add('hidden'));
         document.getElementById('tab-'+t).classList.remove('hidden');
         document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
         document.getElementById('link-'+t).classList.add('active');
-// ... seu código de abas ...
-    if(t === 'torneios') carregarTorneiosPublicos();
+        if(t === 'torneios') carregarTorneiosPublicos();
+    }
+
+    function maskTempo(i) {
+        let v = i.value.replace(/\D/g,'');
+        if (v.length >= 5) v = v.replace(/^(\d{2})(\d{2})(\d{1,2})/, "$1:$2:$3");
+        else if (v.length >= 3) v = v.replace(/^(\d{2})(\d{1,2})/, "$1:$2");
+        i.value = v;
+    }
+
+    // --- RANKING ---
+    function escutarDados() {
+        const local = document.getElementById('localEvento').value.trim();
+        const data = document.getElementById('dataEvento').value;
+        if(!local || !data) return;
+        const id = data + "_" + local.replace(/ /g,'_');
+        db.ref('torneios/' + id).on('value', snap => {
+            dadosRanking = [];
+            snap.forEach(c => dadosRanking.push(c.val()));
+            renderizar();
+        });
+    }
+
+    function renderizar() {
+        dadosRanking.sort((a,b) => b.tempo.localeCompare(a.tempo));
+        const div = document.getElementById('listaRanking');
+        div.innerHTML = "";
+        dadosRanking.forEach((p,i) => {
+            let del = (userLogado.role === 'admin') ? `<button class="btn-del" onclick="excluirItem('${p.id_db}','${p.anilha}')">✘</button>` : '';
+            div.innerHTML += `<div class="ranking-item">
+                <span><b>${i+1}º</b> ${p.nome.toUpperCase()} (${p.dono})<br><small>${p.categoria} | Juiz: ${p.juiz || '---'}</small></span>
+                <span class="tempo-destaque">${p.tempo} ${del}</span>
+            </div>`;
+        });
+    }
+
+    // --- LANÇAR MANUAL (ADMIN/SUP) ---
+    async function salvarResultado() {
+        const local = document.getElementById('localEvento').value.trim();
+        const data = document.getElementById('dataEvento').value;
+        const tipo = document.getElementById('tipoEvento').value;
+        if(!local || !data) return alert("Selecione Local e Data!");
+
+        const btn = document.getElementById('btnSalvarManual');
+        btn.disabled = true;
+
+        const idT = data + "_" + local.replace(/ /g,'_');
+        let juiz = "---";
+        if(tipo === "Torneio") {
+            const sc = await db.ref('lista_de_torneios/'+idT).once('value');
+            if(sc.exists()) juiz = sc.val().juiz;
+        }
+
+        const idU = Date.now();
+        const info = {
+            id_db: idU, nome: document.getElementById('aveNome').value.trim(),
+            dono: document.getElementById('aveDono').value.trim(),
+            anilha: document.getElementById('aveAnilha').value.toUpperCase().trim(),
+            tempo: document.getElementById('aveTempo').value || "00:00:00",
+            categoria: document.getElementById('aveCategoria').value,
+            tipo: tipo, juiz: juiz, data: data, local: local
+        };
+
+        db.ref('torneios/'+idT+'/'+idU).set(info).then(() => {
+            db.ref('historico_aves/'+info.anilha+'/'+idU).set(info);
+            alert("✅ Sucesso!");
+            btn.disabled = false;
+        });
+    }
+
+    // --- AGENDA E AUTO-INSCRIÇÃO ---
+    function carregarTorneiosPublicos() {
+        const hoje = new Date().toISOString().split('T')[0];
+        db.ref('lista_de_torneios').orderByChild('data').startAt(hoje).on('value', snap => {
+            const div = document.getElementById('listaTorneiosPublicos');
+            div.innerHTML = "";
+            snap.forEach(t => {
+                const tor = t.val();
+                div.innerHTML += `<div class="ranking-item" style="background:#252525; margin-bottom:10px; border-radius:8px;">
+                    <span><b>${tor.local.toUpperCase()}</b><br><small>${tor.data.split('-').reverse().join('/')} | Juiz: ${tor.juiz}</small></span>
+                    <button class="btn" style="width:auto; background:var(--primary);" onclick="abrirInscricao('${tor.id}', '${tor.local}')">INSCREVER</button>
+                </div>`;
+            });
+        });
+    }
+
+    function abrirInscricao(id, local) {
+        torneioAtivoId = id;
+        document.getElementById('nomeTorneioSelecionado').innerText = local;
+        document.getElementById('insaveDono').value = userLogado.nome.toUpperCase();
+        document.getElementById('janelaInscricao').classList.remove('hidden');
+    }
+
+    function fecharInscricao() { document.getElementById('janelaInscricao').classList.add('hidden'); }
+
+    async function confirmarInscricao() {
+        const nome = document.getElementById('insaveNome').value.trim();
+        const anilha = document.getElementById('insaveAnilha').value.toUpperCase().trim();
+        const cat = document.getElementById('insaveCategoria').value;
+        const dono = userLogado.nome.toUpperCase();
+
+        // Travas
+        const snap = await db.ref('torneios/'+torneioAtivoId).once('value');
+        let count = 0;
+        snap.forEach(a => { if(a.val().dono === dono) count++; });
+        if(count >= 3) return alert("Limite de 3 aves atingido!");
+
+        if(cat === "Canto Fibra Filhote") {
+            const ano = new Date().getFullYear().toString().slice(-2);
+            const anoAnt = (parseInt(ano)-1).toString();
+            if(!anilha.includes(ano) && !anilha.includes(anoAnt)) return alert("Anilha inválida para filhote!");
+        }
+
+        const st = await db.ref('lista_de_torneios/'+torneioAtivoId).once('value');
+        const tInf = st.val();
+        const idU = Date.now();
+        const ave = { id_db: idU, nome: nome, anilha: anilha, dono: dono, categoria: cat, tempo: "00:00:00", juiz: tInf.juiz, local: tInf.local, data: tInf.data, tipo: "Torneio" };
+
+        db.ref('torneios/'+torneioAtivoId+'/'+idU).set(ave).then(() => {
+            alert("Inscrito!"); fecharInscricao();
+        });
+    }
+
+    // --- ADMIN ACTIONS ---
+    function criarTorneio() {
+        const local = document.getElementById('addLocal').value.trim();
+        const data = document.getElementById('addData').value;
+        const juiz = document.getElementById('addJuiz').value.trim();
+        const lim = document.getElementById('addLimite').value;
+        const idT = data + "_" + local.replace(/ /g,'_');
+        db.ref('lista_de_torneios/'+idT).set({local, data, juiz, limite: parseInt(lim), id: idT}).then(() => {
+            alert("Torneio Criado!");
+            document.getElementById('btnCriarTorneio').innerText = "CRIAR TORNEIO OFICIAL";
+        });
+    }
+
+    function listarTorneios() {
+        db.ref('lista_de_torneios').on('value', snap => {
+            const div = document.getElementById('listaTorneiosCriados');
+            div.innerHTML = "";
+            snap.forEach(t => {
+                const tor = t.val();
+                div.innerHTML += `<div style="background:#333; padding:10px; border-radius:8px; margin-top:5px;">
+                    ${tor.local} | ${tor.juiz}
+                    <button class="btn-del" onclick="prepararEdicaoTorneio('${tor.id}')">📝</button>
+                    <button class="btn-del" onclick="excluirTorneioCompleto('${tor.id}')">🗑️</button>
+                </div>`;
+            });
+        });
+    }
+
+    function prepararEdicaoTorneio(id) {
+        db.ref('lista_de_torneios/'+id).once('value', snap => {
+            const t = snap.val();
+            document.getElementById('addLocal').value = t.local;
+            document.getElementById('addData').value = t.data;
+            document.getElementById('addJuiz').value = t.juiz;
+            document.getElementById('addLimite').value = t.limite;
+            document.getElementById('btnCriarTorneio').innerText = "SALVAR ALTERAÇÕES";
+        });
+    }
+
+    function excluirTorneioCompleto(id) {
+        if(confirm("Excluir torneio e todas as aves?")) {
+            db.ref('lista_de_torneios/'+id).remove();
+            db.ref('torneios/'+id).remove();
+        }
+    }
+
+    // --- OUTROS ---
+    function compartilharZap() {
+        let msg = "*RANKING FIBRA OS*\n\n";
+        dadosRanking.forEach((p,i) => msg += `${i+1}º ${p.nome} - ${p.tempo}\n`);
+        window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(msg));
     }
 
     function excluirItem(id, anilha) {
-        if(!confirm("Excluir?")) return;
-        const idT = document.getElementById('dataEvento').value + "_" + document.getElementById('localEvento').value.replace(/ /g,'_');
+        const idT = document.getElementById('filtroData').value + "_" + document.getElementById('filtroLocal').value.replace(/ /g,'_');
         db.ref('torneios/'+idT+'/'+id).remove();
-        db.ref('historico_aves/'+anilha+'/'+id).remove();
     }
-function buscarRankingAntigo() {
-    const local = document.getElementById('filtroLocal').value.trim();
-    const data = document.getElementById('filtroData').value;
-
-    if(!local || !data) return alert("Informe o Local e a Data para buscar!");
-
-    const id = data + "_" + local.replace(/ /g,'_');
     
-    // Atualiza o título na tela
-    document.getElementById('displayEvento').innerText = "BUSCANDO: " + local.toUpperCase();
-
-    // Busca no Firebase
-    db.ref('torneios/' + id).once('value', snap => {
-        dadosRanking = [];
-        if(!snap.exists()) {
-            document.getElementById('listaRanking').innerHTML = "<p style='color:var(--danger);'>Nenhum registro encontrado nesta data.</p>";
-            return;
-        }
-        
-        snap.forEach(c => { dadosRanking.push(c.val()); });
-        renderizar(); // Mostra na tela
-        alert("Ranking de " + data.split('-').reverse().join('/') + " carregado!");
-    });
-}
-ffunction listarTorneios() {
-    db.ref('lista_de_torneios').on('value', snap => {
-        const div = document.getElementById('listaTorneiosCriados');
-        div.innerHTML = "<b>Torneios Ativos:</b><br>";
-        
-        if(!snap.exists()) {
-            div.innerHTML += "<small>Nenhum torneio cadastrado.</small>";
-            return;
-        }
-
-        snap.forEach(t => {
-            const tor = t.val();
-            div.innerHTML += `
-                <div style="background:#333; padding:10px; border-radius:8px; margin-top:10px; border-left:4px solid var(--accent);">
-                    <small>📍 ${tor.local} (${tor.data.split('-').reverse().join('/')})</small><br>
-                    <small>👨‍⚖️ Juiz: ${tor.juiz} | 🐦 Limite: ${tor.limite}</small>
-                    <div style="margin-top:8px;">
-                        <button class="btn" style="width:auto; padding:5px 10px; font-size:11px; background:var(--accent);" onclick="prepararEdicaoTorneio('${tor.id}')">EDITAR</button>
-                        <button class="btn" style="width:auto; padding:5px 10px; font-size:11px; background:var(--danger);" onclick="excluirTorneioCompleto('${tor.id}')">EXCLUIR</button>
-                    </div>
-                </div>`;
-        });
-    });
-}
-let torneioAtivoId = null;
-
-// Carrega os torneios que o Matheus criou na aba Admin
-function carregarTorneiosPublicos() {
-    const hoje = new Date().toISOString().split('T')[0];
-    db.ref('lista_de_torneios').orderByChild('data').startAt(hoje).on('value', snap => {
-        const div = document.getElementById('listaTorneiosPublicos');
-        div.innerHTML = "";
-        
-        if(!snap.exists()) {
-            div.innerHTML = "<p>Nenhum torneio agendado no momento.</p>";
-            return;
-        }
-
-        snap.forEach(t => {
-            const tor = t.val();
-            div.innerHTML += `
-                <div class="ranking-item" style="background:#252525; margin-bottom:10px; border-radius:8px; padding:15px;">
-                    <span>
-                        <b>${tor.local.toUpperCase()}</b><br>
-                        <small>📅 ${tor.data.split('-').reverse().join('/')} | Juiz: ${tor.juiz}</small>
-                    </span>
-                    <button class="btn" style="width:auto; padding:10px; background:var(--primary);" 
-                        onclick="abrirInscricao('${tor.id}', '${tor.local}')">INSCREVER</button>
-// Função para carregar os dados de volta nos inputs para você editar
-function prepararEdicaoTorneio(id) {
-    db.ref('lista_de_torneios/' + id).once('value', snap => {
-        const t = snap.val();
-        document.getElementById('addLocal').value = t.local;
-        document.getElementById('addData').value = t.data;
-        document.getElementById('addJuiz').value = t.juiz;
-        document.getElementById('addLimite').value = t.limite;
-        
-        // Altera o texto do botão para avisar que está editando
-        const btn = document.querySelector('#areaMasterTorneios .btn');
-        btn.innerText = "SALVAR ALTERAÇÕES";
-        btn.style.background = "#27ae60";
-        
-        alert("Dados carregados nos campos acima. Altere e clique em Salvar!");
-        window.scrollTo(0, 0); // Sobe a tela para os campos
-    });
-}
-
-// Função para excluir o torneio e TODOS os registros de aves vinculados a ele
-function excluirTorneioCompleto(id) {
-    if(confirm("⚠️ ATENÇÃO: Isso excluirá o torneio e TODAS as inscrições de aves vinculadas a ele. Confirmar?")) {
-        // Remove da lista de torneios
-        db.ref('lista_de_torneios/' + id).remove();
-        // Remove o banco de aves desse torneio
-        db.ref('torneios/' + id).remove();
-        
-        alert("Torneio excluído com sucesso!");
-    }
-}
-                </div>`;
-        });
-    });
-}
-
-function abrirInscricao(id, local) {
-    torneioAtivoId = id;
-    document.getElementById('nomeTorneioSelecionado').innerText = "Inscrição: " + local;
-    document.getElementById('insaveDono').value = userLogado.nome.toUpperCase();
-    document.getElementById('janelaInscricao').classList.remove('hidden');
-    window.scrollTo(0, document.body.scrollHeight);
-}
-
-function fecharInscricao() {
-    document.getElementById('janelaInscricao').classList.add('hidden');
-    torneioAtivoId = null;
-}
-
-async function confirmarInscricao() {
-    const nome = document.getElementById('insaveNome').value.trim();
-    const anilha = document.getElementById('insaveAnilha').value.toUpperCase().trim();
-    const categoria = document.getElementById('insaveCategoria').value;
-    const donoLogado = userLogado.nome.toUpperCase();
-
-    if(!nome || !anilha) return alert("Preencha nome e anilha!");
-
-    // --- REGRA 1: LIMITE DE 3 AVES POR PROPRIETÁRIO ---
-    const snapVerifica = await db.ref('torneios/' + torneioAtivoId).once('value');
-    let contadorAves = 0;
-    
-    if (snapVerifica.exists()) {
-        snapVerifica.forEach(ave => {
-            if (ave.val().dono === donoLogado) {
-                contadorAves++;
-            }
+    function pesquisarAve() {
+        const a = document.getElementById('buscaAnilha').value.toUpperCase();
+        if(a.length < 3) return;
+        db.ref('historico_aves/'+a).on('value', snap => {
+            const res = document.getElementById('resBusca'); res.innerHTML = "";
+            snap.forEach(c => { const r = c.val(); res.innerHTML += `<div class="ranking-item"><span>${r.data} - ${r.local}</span><b>${r.tempo}</b></div>`; });
         });
     }
-
-    if (contadorAves >= 3) {
-        return alert("❌ LIMITE ATINGIDO: Você só pode inscrever até 3 aves por torneio!");
-    }
-
-    // --- REGRA 2: VALIDAÇÃO DE ANILHA PARA FILHOTES ---
-    if (categoria === "Canto Fibra Filhote") {
-        const anoAtual = new Date().getFullYear();
-        const anoAnterior = anoAtual - 1;
-        
-        // Verifica se a anilha contém o ano atual ou o anterior (Ex: 25 ou 26)
-        const sufixoAtual = anoAtual.toString().slice(-2);
-        const sufixoAnterior = anoAnterior.toString().slice(-2);
-
-        if (!anilha.includes(sufixoAtual) && !anilha.includes(sufixoAnterior)) {
-            return alert(`❌ REGRA DE FILHOTE: A anilha deve ser do ano atual (${sufixoAtual}) ou anterior (${sufixoAnterior})!`);
-        }
-    }
-
-    // --- SALVAMENTO (Se passar pelas travas acima) ---
-    const snapTor = await db.ref('lista_de_torneios/' + torneioAtivoId).once('value');
-    const infoT = snapTor.val();
-    const idUnico = Date.now();
-
-    const dadosAve = {
-        id_db: idUnico,
-        nome: nome,
-        anilha: anilha,
-        dono: donoLogado,
-        categoria: categoria,
-        tempo: "00:00:00",
-        juiz: infoT.juiz,
-        local: infoT.local,
-        data: infoT.data,
-        tipo: "Torneio"
-    };
-
-    db.ref('torneios/' + torneioAtivoId + '/' + idUnico).set(dadosAve).then(() => {
-        alert("✅ Inscrição confirmada!");
-        fecharInscricao();
-        document.getElementById('insaveNome').value = "";
-        document.getElementById('insaveAnilha').value = "";
-    });
-}
 </script>
 </body>
 </html>
