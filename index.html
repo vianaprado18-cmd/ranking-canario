@@ -534,19 +534,50 @@ async function confirmarInscricao() {
     const nome = document.getElementById('insaveNome').value.trim();
     const anilha = document.getElementById('insaveAnilha').value.toUpperCase().trim();
     const categoria = document.getElementById('insaveCategoria').value;
+    const donoLogado = userLogado.nome.toUpperCase();
 
     if(!nome || !anilha) return alert("Preencha nome e anilha!");
 
-    // Busca dados do torneio para garantir sincronia
+    // --- REGRA 1: LIMITE DE 3 AVES POR PROPRIETÁRIO ---
+    const snapVerifica = await db.ref('torneios/' + torneioAtivoId).once('value');
+    let contadorAves = 0;
+    
+    if (snapVerifica.exists()) {
+        snapVerifica.forEach(ave => {
+            if (ave.val().dono === donoLogado) {
+                contadorAves++;
+            }
+        });
+    }
+
+    if (contadorAves >= 3) {
+        return alert("❌ LIMITE ATINGIDO: Você só pode inscrever até 3 aves por torneio!");
+    }
+
+    // --- REGRA 2: VALIDAÇÃO DE ANILHA PARA FILHOTES ---
+    if (categoria === "Canto Fibra Filhote") {
+        const anoAtual = new Date().getFullYear();
+        const anoAnterior = anoAtual - 1;
+        
+        // Verifica se a anilha contém o ano atual ou o anterior (Ex: 25 ou 26)
+        const sufixoAtual = anoAtual.toString().slice(-2);
+        const sufixoAnterior = anoAnterior.toString().slice(-2);
+
+        if (!anilha.includes(sufixoAtual) && !anilha.includes(sufixoAnterior)) {
+            return alert(`❌ REGRA DE FILHOTE: A anilha deve ser do ano atual (${sufixoAtual}) ou anterior (${sufixoAnterior})!`);
+        }
+    }
+
+    // --- SALVAMENTO (Se passar pelas travas acima) ---
     const snapTor = await db.ref('lista_de_torneios/' + torneioAtivoId).once('value');
     const infoT = snapTor.val();
-
     const idUnico = Date.now();
+
     const dadosAve = {
         id_db: idUnico,
         nome: nome,
         anilha: anilha,
-        dono: userLogado.nome.toUpperCase(),
+        dono: donoLogado,
         categoria: categoria,
         tempo: "00:00:00",
         juiz: infoT.juiz,
@@ -556,8 +587,7 @@ async function confirmarInscricao() {
     };
 
     db.ref('torneios/' + torneioAtivoId + '/' + idUnico).set(dadosAve).then(() => {
-        db.ref('historico_aves/' + anilha + '/' + idUnico).set(dadosAve);
-        alert("Inscrição confirmada para o torneio " + infoT.local);
+        alert("✅ Inscrição confirmada!");
         fecharInscricao();
         document.getElementById('insaveNome').value = "";
         document.getElementById('insaveAnilha').value = "";
