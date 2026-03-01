@@ -44,6 +44,19 @@
             <div id="link-admin" class="tab-link hidden" onclick="showTab('admin')">⚙️ Matheus</div>
         </div>
 
+        <div id="tab-ranking">
+            <div class="card">
+                <h3 style="color: var(--accent);">📊 Consultar Resultados</h3>
+                <input type="text" id="filtroLocal" placeholder="Local (Ex: Campo Novo)">
+                <input type="date" id="filtroData">
+                <button class="btn" style="background: var(--accent); color: white;" onclick="buscarRankingAntigo()">CARREGAR RANKING</button>
+                <hr style="border: 0.5px solid #333; margin: 20px 0;">
+                <h3 id="displayEvento" style="color: var(--primary);">Selecione um evento</h3>
+                <div id="listaRanking"></div>
+                <button class="btn btn-zap" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
+            </div>
+        </div>
+
         <div id="tab-torneios" class="hidden">
             <div class="card">
                 <h3 style="color: var(--accent);">🏆 Torneios Disponíveis</h3>
@@ -63,23 +76,10 @@
             </div>
         </div>
 
-        <div id="tab-ranking">
-            <div class="card">
-                <h3 style="color: var(--accent);">📊 Consultar Resultados</h3>
-                <input type="text" id="filtroLocal" placeholder="Local (Ex: Campo Novo)">
-                <input type="date" id="filtroData">
-                <button class="btn" style="background: var(--accent); color: white;" onclick="buscarRankingAntigo()">CARREGAR RANKING</button>
-                <hr style="border: 0.5px solid #333; margin: 20px 0;">
-                <h3 id="displayEvento" style="color: var(--primary);">Selecione um evento</h3>
-                <div id="listaRanking"></div>
-                <button class="btn btn-zap" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
-            </div>
-        </div>
-
         <div id="tab-lancar" class="hidden">
             <div class="card">
                 <h4>📍 Dados do Evento</h4>
-                <select id="tipoEvento" onchange="escutarDados()">
+                <select id="tipoEvento">
                     <option value="Torneio">🏆 Torneio Oficial</option>
                     <option value="Treino">⏱️ Treino Livre</option>
                 </select>
@@ -106,16 +106,30 @@
 
         <div id="tab-admin" class="hidden">
             <div class="card">
-                <h3>📅 Configurar Torneio Oficial</h3>
+                <h3 style="color: var(--primary);">👥 Gestão de Usuários</h3>
+                <div id="listaUsuarios"></div>
+                <hr style="border:1px solid #333; margin:15px 0;">
+                <input type="text" id="nUser" placeholder="Login">
+                <input type="text" id="nPass" placeholder="Senha">
+                <select id="nRole">
+                    <option value="admin">🏆 Admin</option>
+                    <option value="supervisor">🔑 Supervisor</option>
+                    <option value="view">👁️ Visitante</option>
+                </select>
+                <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR USUÁRIO</button>
+            </div>
+
+            <div class="card" style="border: 1px solid var(--accent); background: #222;">
+                <h3 style="color: var(--accent);">📅 Configurar Torneio Oficial</h3>
                 <input type="text" id="addLocal" placeholder="Local do Torneio">
                 <input type="date" id="addData">
                 <input type="text" id="addJuiz" placeholder="Nome do Juiz">
                 <input type="number" id="addLimite" placeholder="Limite de Aves">
-                <button class="btn" id="btnCriarTorneio" style="background: var(--accent); color: white;" onclick="criarTorneio()">CRIAR TORNEIO</button>
+                <button class="btn" style="background: var(--accent); color: white;" onclick="criarTorneio()">CRIAR TORNEIO</button>
                 <div id="listaTorneiosCriados" style="margin-top: 15px; text-align: left;"></div>
-                <hr>
-                <button class="btn" style="background: #444;" onclick="location.reload()">SAIR / LOGOUT</button>
             </div>
+            
+            <button class="btn" style="background: #444; margin-top: 20px;" onclick="location.reload()">SAIR / LOGOUT</button>
         </div>
     </div>
 </div>
@@ -151,13 +165,35 @@
         document.getElementById('appContent').classList.remove('hidden');
         if(dados.role === 'admin') {
             document.getElementById('link-admin').classList.remove('hidden');
+            listarUsuarios();
             listarTorneios();
         }
         if(dados.role !== 'view') document.getElementById('link-lancar').classList.remove('hidden');
         showTab('ranking');
     }
 
-    // --- NAVEGAÇÃO ---
+    // --- ABA ADMIN: USUÁRIOS ---
+    function listarUsuarios() {
+        db.ref('usuarios').on('value', snap => {
+            const div = document.getElementById('listaUsuarios'); div.innerHTML = "";
+            snap.forEach(u => {
+                const user = u.val();
+                div.innerHTML += `<div class="ranking-item"><span>${user.nome} (${user.role})</span><button class="btn-del" onclick="excluirUsuario('${user.nome}')">✘</button></div>`;
+            });
+        });
+    }
+
+    function cadastrarUsuario() {
+        const n = document.getElementById('nUser').value.toLowerCase().trim();
+        const p = document.getElementById('nPass').value.trim();
+        const r = document.getElementById('nRole').value;
+        if(!n || !p) return alert("Preencha tudo!");
+        db.ref('usuarios/'+n).set({nome:n, senha:p, role:r}).then(() => alert("Usuário Criado!"));
+    }
+
+    function excluirUsuario(n) { if(n !== 'matheus' && confirm("Excluir usuário?")) db.ref('usuarios/'+n).remove(); }
+
+    // --- NAVEGAÇÃO E RESTANTE ---
     function showTab(t){
         document.querySelectorAll('[id^="tab-"]').forEach(d => d.classList.add('hidden'));
         document.getElementById('tab-'+t).classList.remove('hidden');
@@ -166,28 +202,15 @@
         if(t === 'torneios') carregarTorneiosPublicos();
     }
 
-    // --- RANKING ---
     function buscarRankingAntigo() {
         const local = document.getElementById('filtroLocal').value.trim();
         const data = document.getElementById('filtroData').value;
-        if(!local || !data) return alert("Preencha Local e Data!");
+        if(!local || !data) return alert("Preencha!");
         const id = data + "_" + local.replace(/ /g,'_');
         db.ref('torneios/' + id).on('value', snap => {
             dadosRanking = [];
             snap.forEach(c => dadosRanking.push(c.val()));
             document.getElementById('displayEvento').innerText = local.toUpperCase();
-            renderizar();
-        });
-    }
-
-    function escutarDados() {
-        const local = document.getElementById('localEvento').value.trim();
-        const data = document.getElementById('dataEvento').value;
-        if(!local || !data) return;
-        const id = data + "_" + local.replace(/ /g,'_');
-        db.ref('torneios/' + id).on('value', snap => {
-            dadosRanking = [];
-            snap.forEach(c => dadosRanking.push(c.val()));
             renderizar();
         });
     }
@@ -205,7 +228,6 @@
         });
     }
 
-    // --- INSCRIÇÃO (A MUDANÇA QUE VOCÊ QUERIA) ---
     function carregarTorneiosPublicos() {
         const hoje = new Date().toISOString().split('T')[0];
         db.ref('lista_de_torneios').orderByChild('data').startAt(hoje).on('value', snap => {
@@ -235,51 +257,37 @@
         const anilha = document.getElementById('insaveAnilha').value.toUpperCase().trim();
         const cat = document.getElementById('insaveCategoria').value;
         const dono = userLogado.nome.toUpperCase();
-
-        if(!nome || !anilha) return alert("Preencha tudo!");
-
-        // REGRA 3 AVES
-        const snap = await db.ref('torneios/' + torneioAtivoId).once('value');
-        let count = 0;
-        snap.forEach(a => { if(a.val().dono === dono) count++; });
-        if(count >= 3) return alert("Limite de 3 aves atingido!");
-
-        // REGRA FILHOTE (ANO ATUAL OU ANTERIOR)
+        if(!nome || !anilha) return alert("Preencha!");
+        const snap = await db.ref('torneios/'+torneioAtivoId).once('value');
+        let count = 0; snap.forEach(a => { if(a.val().dono === dono) count++; });
+        if(count >= 3) return alert("Limite 3 aves!");
         if(cat === "Canto Fibra Filhote") {
-            const ano26 = "26"; const ano25 = "25"; // Anos de exemplo
-            if(!anilha.includes(ano26) && !anilha.includes(ano25)) return alert("Anilha não permitida para filhotes!");
+            const ano = new Date().getFullYear().toString().slice(-2);
+            if(!anilha.includes(ano) && !anilha.includes((parseInt(ano)-1).toString())) return alert("Anilha inválida para filhote!");
         }
-
         const st = await db.ref('lista_de_torneios/'+torneioAtivoId).once('value');
         const tInf = st.val();
         const idU = Date.now();
         const ave = { id_db: idU, nome: nome, anilha: anilha, dono: dono, categoria: cat, tempo: "00:00:00", juiz: tInf.juiz, local: tInf.local, data: tInf.data, tipo: "Torneio" };
-
-        db.ref('torneios/'+torneioAtivoId+'/'+idU).set(ave).then(() => {
-            alert("Inscrição confirmada!"); fecharInscricao();
-        });
+        db.ref('torneios/'+torneioAtivoId+'/'+idU).set(ave).then(() => { alert("Inscrito!"); fecharInscricao(); });
     }
 
-    // --- ADMIN ---
     function criarTorneio() {
         const local = document.getElementById('addLocal').value.trim();
         const data = document.getElementById('addData').value;
         const juiz = document.getElementById('addJuiz').value.trim();
         const lim = document.getElementById('addLimite').value;
-        if(!local || !data) return alert("Preencha!");
         const idT = data + "_" + local.replace(/ /g,'_');
         db.ref('lista_de_torneios/'+idT).set({local, data, juiz, limite: parseInt(lim), id: idT}).then(() => alert("Criado!"));
     }
 
     function listarTorneios() {
         db.ref('lista_de_torneios').on('value', snap => {
-            const div = document.getElementById('listaTorneiosCriados');
-            div.innerHTML = "";
+            const div = document.getElementById('listaTorneiosCriados'); div.innerHTML = "";
             snap.forEach(t => {
                 const tor = t.val();
                 div.innerHTML += `<div style="background:#333; padding:10px; border-radius:8px; margin-top:5px;">
-                    ${tor.local} | ${tor.data}
-                    <button class="btn-del" onclick="excluirTorneio('${tor.id}')">🗑️</button>
+                    ${tor.local} (${tor.data}) <button class="btn-del" onclick="excluirTorneio('${tor.id}')">🗑️</button>
                 </div>`;
             });
         });
@@ -287,14 +295,7 @@
 
     function excluirTorneio(id) { if(confirm("Excluir?")) db.ref('lista_de_torneios/'+id).remove(); }
 
-    function maskTempo(i) {
-        let v = i.value.replace(/\D/g,'');
-        if (v.length >= 5) v = v.replace(/^(\d{2})(\d{2})(\d{1,2})/, "$1:$2:$3");
-        else if (v.length >= 3) v = v.replace(/^(\d{2})(\d{1,2})/, "$1:$2");
-        i.value = v;
-    }
-
- function compartilharZap() {
+  function compartilharZap() {
     const local = document.getElementById('displayEvento').innerText || "Torneio";
     const dataInput = document.getElementById('filtroData').value || document.getElementById('dataEvento').value;
     const dataBr = dataInput ? dataInput.split('-').reverse().join('/') : "";
@@ -327,6 +328,13 @@
     const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensagem);
     window.open(url, '_blank');
 }
+
+    function maskTempo(i) {
+        let v = i.value.replace(/\D/g,'');
+        if (v.length >= 5) v = v.replace(/^(\d{2})(\d{2})(\d{1,2})/, "$1:$2:$3");
+        else if (v.length >= 3) v = v.replace(/^(\d{2})(\d{1,2})/, "$1:$2");
+        i.value = v;
+    }
 </script>
 </body>
 </html>
