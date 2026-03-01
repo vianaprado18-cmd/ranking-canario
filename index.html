@@ -211,6 +211,7 @@ function escutarDados() {
     const local = document.getElementById('localEvento').value.trim();
     const data = document.getElementById('dataEvento').value;
     const tipo = document.getElementById('tipoEvento').value;
+if(t === 'agenda') carregarAgenda();
     if(!local || !data) return;
 
     // Criando o ID oficial (Ex: 2026-02-28_Campo_Novo)
@@ -458,7 +459,7 @@ function buscarRankingAntigo() {
         alert("Ranking de " + data.split('-').reverse().join('/') + " carregado!");
     });
 }
- function listarTorneios() {
+ffunction listarTorneios() {
     db.ref('lista_de_torneios').on('value', snap => {
         const div = document.getElementById('listaTorneiosCriados');
         div.innerHTML = "<b>Torneios Ativos:</b><br>";
