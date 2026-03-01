@@ -283,11 +283,44 @@
         i.value = v;
     }
 
-    function compartilharZap() {
-        let msg = `🏆 *RANKING: ${document.getElementById('displayEvento').innerText}*\n\n`;
-        dadosRanking.forEach((p,i) => msg += `*${i+1}º* ${p.nome} - *${p.tempo}*\n(${p.dono})\n\n`);
-        window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(msg));
-    }
+ function compartilharZap() {
+    const local = document.getElementById('localEvento').value.trim() || "Não Informado";
+    const dataInput = document.getElementById('dataEvento').value;
+    const dataBr = dataInput ? dataInput.split('-').reverse().join('/') : "";
+    const tipo = document.getElementById('tipoEvento').value;
+    
+    if (dadosRanking.length === 0) {
+        return alert("O ranking está vazio! Certifique-se de que as aves aparecem na tela antes de compartilhar.");
+    }
+
+    // Ordenar por tempo antes de enviar (Garantia extra)
+    dadosRanking.sort((a, b) => b.tempo.localeCompare(a.tempo));
+
+    // Montando o cabeçalho
+    let emoji = (tipo === "Torneio") ? "🏆" : "⏱️";
+    let mensagem = `${emoji} *${tipo.toUpperCase()}: ${local.toUpperCase()}* ${emoji}\n`;
+    if(dataBr) mensagem += `📅 DATA: ${dataBr}\n`;
+    mensagem += `\n--------------------------\n\n`;
+
+    // Listando as aves
+    dadosRanking.forEach((p, i) => {
+        mensagem += `*${i + 1}º* ${p.nome.toUpperCase()}\n`;
+        mensagem += `⏱️ *${p.tempo}* | ${p.categoria}\n`;
+        mensagem += `👤 ${p.dono}\n`;
+        
+        // Só adiciona o Juiz se for Torneio e o campo não estiver vazio
+        if(tipo === "Torneio" && p.juiz && p.juiz !== "---") {
+            mensagem += `👨‍⚖️ Juiz: ${p.juiz}\n`;
+        }
+        mensagem += `\n`;
+    });
+
+    mensagem += `--------------------------\n_Gerado por Fibra OS 🔰_`;
+
+    // Envio para o WhatsApp
+    const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensagem);
+    window.open(url, '_blank');
+}
 </script>
 </body>
 </html>
