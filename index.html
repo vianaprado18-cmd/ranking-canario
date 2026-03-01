@@ -243,3 +243,89 @@
         };
         
         db.ref('torneios/'+idT+'/'+info.id_db).set(info).then(() => {
+            db.ref('historico_aves/'+anilha+'/'+info.id_db).set(info);
+            alert("Sucesso!");
+            document.getElementById('aveNome').value = ""; 
+            document.getElementById('aveAnilha').value = ""; 
+            document.getElementById('aveTempo').value = "";
+        });
+    }
+
+    function criarTorneio() {
+        const local = document.getElementById('addLocal').value.trim();
+        const data = document.getElementById('addData').value;
+        const juiz = document.getElementById('addJuiz').value.trim();
+        const limite = document.getElementById('addLimite').value;
+        if(!local || !data || !juiz || !limite) return alert("Preencha tudo!");
+        const idT = data + "_" + local.replace(/ /g,'_');
+        db.ref('lista_de_torneios/' + idT).set({
+            local: local, data: data, juiz: juiz, limite: parseInt(limite), id: idT
+        }).then(() => alert("Torneio Criado!"));
+    }
+
+    function listarTorneios() {
+        db.ref('lista_de_torneios').on('value', snap => {
+            const div = document.getElementById('listaTorneiosCriados');
+            div.innerHTML = "<b>Torneios Ativos:</b><br>";
+            snap.forEach(t => {
+                const tor = t.val();
+                div.innerHTML += `📍 ${tor.local} (${tor.data}) - Juiz: ${tor.juiz}<br>`;
+            });
+        });
+    }
+
+    function compartilharZap() {
+        if (dadosRanking.length === 0) return alert("Ranking vazio!");
+        const local = document.getElementById('localEvento').value || "Torneio";
+        let m = `🏆 *RANKING FIBRA - ${local.toUpperCase()}* 🏆\n\n`;
+        dadosRanking.forEach((p,i) => {
+            m += `*${i+1}º* ${p.nome.toUpperCase()}\n⏱️ ${p.tempo} | ${p.categoria}\n👤 ${p.dono}\n\n`;
+        });
+        window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(m));
+    }
+
+    function listarUsuarios() {
+        db.ref('usuarios').on('value', snap => {
+            const div = document.getElementById('listaUsuarios'); div.innerHTML = "";
+            snap.forEach(u => {
+                const user = u.val();
+                div.innerHTML += `<div class="ranking-item"><span>${user.nome}</span><button class="btn-del" onclick="excluirUsuario('${user.nome}')">✘</button></div>`;
+            });
+        });
+    }
+
+    function cadastrarUsuario() {
+        const n = document.getElementById('nUser').value.toLowerCase().trim();
+        const p = document.getElementById('nPass').value.trim();
+        if(!n || !p) return alert("Preencha tudo!");
+        db.ref('usuarios/'+n).set({nome:n, senha:p, role:document.getElementById('nRole').value});
+        alert("Criado!");
+    }
+
+    function excluirUsuario(n) { if(n !== 'matheus' && confirm("Excluir?")) db.ref('usuarios/'+n).remove(); }
+
+    function pesquisarAve() {
+        const a = document.getElementById('buscaAnilha').value.toUpperCase();
+        if(a.length < 2) return;
+        db.ref('historico_aves/'+a).on('value', snap => {
+            const res = document.getElementById('resBusca'); res.innerHTML = "";
+            snap.forEach(c => { const r = c.val(); res.innerHTML += `<div class="ranking-item"><span>${r.data} - ${r.local}</span><b>${r.tempo}</b></div>`; });
+        });
+    }
+
+    function showTab(t){
+        document.querySelectorAll('[id^="tab-"]').forEach(d => d.classList.add('hidden'));
+        document.getElementById('tab-'+t).classList.remove('hidden');
+        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+        document.getElementById('link-'+t).classList.add('active');
+    }
+
+    function excluirItem(id, anilha) {
+        if(!confirm("Excluir?")) return;
+        const idT = document.getElementById('dataEvento').value + "_" + document.getElementById('localEvento').value.replace(/ /g,'_');
+        db.ref('torneios/'+idT+'/'+id).remove();
+        db.ref('historico_aves/'+anilha+'/'+id).remove();
+    }
+</script>
+</body>
+</html>
