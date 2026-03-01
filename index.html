@@ -97,18 +97,16 @@
                 </select>
                 <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR USUÁRIO</button>
                 <button class="btn" style="background: #444;" onclick="location.reload()">SAIR</button>
-<div class="card" style="border: 1px solid var(--accent); margin-top: 20px;">
-    <h3 style="color: var(--accent);">📅 Adicionar Novo Torneio</h3>
-    <input type="text" id="addLocal" placeholder="Nome do Torneio (ex: Regional 2026)">
+<div id="areaMasterTorneios" class="card hidden" style="border: 1px solid var(--accent); margin-top: 20px;">
+    <h3 style="color: var(--accent);">📅 Configurar Torneio Oficial</h3>
+    <input type="text" id="addLocal" placeholder="Nome do Local/Torneio">
     <input type="date" id="addData">
+    <input type="text" id="addJuiz" placeholder="Nome do Juiz">
+    <input type="number" id="addLimite" placeholder="Qtd Máxima de Canários">
+    
     <button class="btn" style="background: var(--accent); color: white;" onclick="criarTorneio()">CRIAR TORNEIO OFICIAL</button>
-    <div id="listaTorneiosCriados" style="margin-top: 15px; font-size: 13px; text-align: left;"></div>
-</div><div id="areaMasterTorneios" class="card hidden" style="border: 1px solid var(--accent); margin-top: 20px;">
-    <h3 style="color: var(--accent);">📅 Adicionar Novo Torneio</h3>
-    <input type="text" id="addLocal" placeholder="Nome do Torneio">
-    <input type="date" id="addData">
-    <button class="btn" style="background: var(--accent); color: white;" onclick="criarTorneio()">CRIAR TORNEIO OFICIAL</button>
-    <div id="listaTorneiosCriados" style="margin-top: 15px; font-size: 13px; text-align: left;"></div>
+    
+    <div id="listaTorneiosCriados" style="margin-top: 15px; font-size: 13px; text-align: left; background: #222; padding: 10px; border-radius: 8px;"></div>
 </div>
             </div>
         </div>
@@ -210,39 +208,48 @@
         });
     }
 
-    async function salvarResultado() {
-        const local = document.getElementById('localEvento').value;
-        const data = document.getElementById('dataEvento').value;
-        const anilha = document.getElementById('aveAnilha').value.toUpperCase().trim();
-        const tempo = document.getElementById('aveTempo').value;
-        const categoria = document.getElementById('aveCategoria').value;
+   async function salvarResultado() {
+    const local = document.getElementById('localEvento').value;
+    const data = document.getElementById('dataEvento').value;
+    
+    // Busca as configurações do torneio para checar o limite
+    const idT = data + "_" + local.replace(/ /g,'_');
+    const snapConfig = await db.ref('lista_de_torneios/' + idT).once('value');
+    const config = snapConfig.val();
 
-        if(!local || !data || !anilha || tempo.length < 8) return alert("Preencha tudo!");
-
-        if (dadosRanking.find(ave => ave.anilha === anilha)) {
-            return alert("ERRO: Anilha já registrada hoje!");
-        }
-
-        const idT = data + "_" + local.replace(/ /g,'_');
-        const info = { 
-            id_db: Date.now(), 
-            nome: document.getElementById('aveNome').value, 
-            dono: document.getElementById('aveDono').value, 
-            anilha: anilha, 
-            tempo: tempo, 
-            categoria: categoria,
-            data: data, 
-            local: local 
-        };
-        
-        db.ref('torneios/'+idT+'/'+info.id_db).set(info).then(() => {
-            db.ref('historico_aves/'+anilha+'/'+info.id_db).set(info);
-            alert("Registrado!");
-            document.getElementById('aveNome').value = ""; 
-            document.getElementById('aveAnilha').value = ""; 
-            document.getElementById('aveTempo').value = "";
-        });
+    if(config && dadosRanking.length >= config.limite) {
+        return alert("❌ LIMITE ATINGIDO: Este torneio só permite " + config.limite + " canários!");
     }
+
+    const anilha = document.getElementById('aveAnilha').value.toUpperCase().trim();
+    const tempo = document.getElementById('aveTempo').value;
+    const categoria = document.getElementById('aveCategoria').value;
+    const nomeAve = document.getElementById('aveNome').value;
+    const dono = document.getElementById('aveDono').value;
+
+    if(!anilha || tempo.length < 8 || !nomeAve) return alert("Preencha os dados da ave corretamente!");
+
+    const info = { 
+        id_db: Date.now(), 
+        nome: nomeAve, 
+        dono: dono, 
+        anilha: anilha, 
+        tempo: tempo, 
+        categoria: categoria,
+        juiz: config ? config.juiz : "Não informado", // Salva o nome do juiz no registro da ave
+        data: data, 
+        local: local 
+    };
+    
+    db.ref('torneios/'+idT+'/'+info.id_db).set(info).then(() => {
+        db.ref('historico_aves/'+anilha+'/'+info.id_db).set(info);
+        alert("Ave registrada com sucesso!");
+        // Limpa apenas os campos da ave
+        document.getElementById('aveNome').value = ""; 
+        document.getElementById('aveAnilha').value = ""; 
+        document.getElementById('aveTempo').value = "";
+    });
+}
 
     function compartilharZap() {
     const local = document.getElementById('localEvento').value || "Torneio";
@@ -314,21 +321,28 @@
         const idT = document.getElementById('dataEvento').value + "_" + document.getElementById('localEvento').value.replace(/ /g,'_');
         db.ref('torneios/'+idT+'/'+id).remove();
         db.ref('historico_aves/'+anilha+'/'+id).remove();
-    }function criarTorneio() {
+    function criarTorneio() {
     const local = document.getElementById('addLocal').value.trim();
     const data = document.getElementById('addData').value;
+    const juiz = document.getElementById('addJuiz').value.trim();
+    const limite = document.getElementById('addLimite').value;
 
-    if(!local || !data) return alert("Preencha nome e data!");
+    if(!local || !data || !juiz || !limite) return alert("Preencha todos os campos, incluindo Juiz e Limite!");
 
     const idT = data + "_" + local.replace(/ /g,'_');
     
     db.ref('lista_de_torneios/' + idT).set({
         local: local,
         data: data,
-        id: idT
+        juiz: juiz,
+        limite: parseInt(limite),
+        id: idT,
+        criadoPor: 'Matheus'
     }).then(() => {
-        alert("Torneio Criado!");
+        alert("Torneio Configurado com Sucesso!");
         document.getElementById('addLocal').value = "";
+        document.getElementById('addJuiz').value = "";
+        document.getElementById('addLimite').value = "";
     });
 }
 
