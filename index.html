@@ -174,22 +174,29 @@
         else if (v.length >= 3) v = v.replace(/^(\d{2})(\d{1,2})/, "$1:$2");
         i.value = v;
     }
+function escutarDados() {
+    const local = document.getElementById('localEvento').value.trim();
+    const data = document.getElementById('dataEvento').value;
+    const tipo = document.getElementById('tipoEvento').value;
 
-    function escutarDados() {
-        const local = document.getElementById('localEvento').value;
-        const data = document.getElementById('dataEvento').value;
-        const tipo = document.getElementById('tipoEvento').value;
-        if(!local || !data) return;
-        const id = data + "_" + local.replace(/ /g,'_');
-        document.getElementById('displayEvento').innerText = tipo.toUpperCase() + ": " + local.toUpperCase();
-        
-        db.ref('torneios/' + id).on('value', snap => {
-            dadosRanking = [];
-            snap.forEach(c => { dadosRanking.push(c.val()); });
-            renderizar();
+    if(!local || !data) return;
+
+    // Criando o ID oficial (Ex: 2026-02-28_Campo_Novo)
+    const id = data + "_" + local.replace(/ /g,'_');
+    
+    console.log("Buscando dados no ID:", id); // Isso ajuda a descobrir erros
+
+    document.getElementById('displayEvento').innerText = tipo.toUpperCase() + ": " + local.toUpperCase();
+
+    // Referência correta no Firebase
+    db.ref('torneios/' + id).on('value', snap => {
+        dadosRanking = [];
+        snap.forEach(c => { 
+            dadosRanking.push(c.val()); 
         });
-    }
-
+        renderizar(); // Chama a função para desenhar na tela
+    });
+}
     function renderizar() {
         dadosRanking.sort((a,b) => b.tempo.localeCompare(a.tempo));
         const div = document.getElementById('listaRanking');
@@ -230,6 +237,15 @@
             return alert("❌ LIMITE ATINGIDO: Máximo de " + config.limite + " aves!");
         }
         juizAtual = config.juiz;
+// Use o .trim() para evitar que um espaço invisível quebre o link com o banco
+    const local = document.getElementById('localEvento').value.trim();
+    const data = document.getElementById('dataEvento').value;
+    
+    if(!local || !data) return alert("Defina Local e Data!");
+
+    const idT = data + "_" + local.replace(/ /g,'_');
+    
+    // ... restante do seu código de salvar ...
     }
 
     const anilha = document.getElementById('aveAnilha').value.toUpperCase().trim();
