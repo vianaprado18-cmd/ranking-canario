@@ -107,28 +107,36 @@
             </div>
         </div>
 
-        <div id="tab-admin" class="hidden">
-            <div class="card">
-                <h3 style="color: var(--primary);">👥 Gestão de Usuários</h3>
-                <div id="listaUsuarios"></div>
-                <hr style="border:1px solid #333; margin:15px 0;">
-                <input type="text" id="nUser" placeholder="Login">
-                <input type="text" id="nPass" placeholder="Senha">
-                <select id="nRole">
-                    <option value="admin">🏆 Admin</option>
-                    <option value="supervisor">🔑 Supervisor</option>
-                    <option value="view">👁️ Visitante</option>
-                </select>
-                <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR USUÁRIO</button>
-            </div>
-            <div class="card">
-                <h3 style="color: var(--accent);">📅 Configurar Torneio</h3>
-                <input type="text" id="addLocal" placeholder="Local">
-                <input type="date" id="addData">
-                <input type="text" id="addJuiz" placeholder="Juiz">
-                <input type="number" id="addLimite" placeholder="Limite">
-                <button class="btn" style="background: var(--accent); color: white;" onclick="criarTorneio()">CRIAR TORNEIO</button>
-                <div id="listaTorneiosCriados" style="margin-top: 15px;"></div>
+       <div id="tab-historico" class="hidden">
+            <div class="card">
+                <h3>🔍 Histórico</h3>
+                <input type="text" id="buscaAnilha" placeholder="Anilha..." oninput="pesquisarAve()">
+                <div id="resBusca"></div>
+            </div>
+        </div>
+
+        <div id="tab-admin" class="hidden">
+            <div class="card">
+                <h3>👥 Gestão de Usuários</h3>
+                <div id="listaUsuarios"></div>
+                <hr style="border:1px solid #333; margin:15px 0;">
+                <input type="text" id="nUser" placeholder="Login">
+                <input type="text" id="nPass" placeholder="Senha">
+                <select id="nRole">
+                    <option value="admin">🏆 Admin</option>
+                    <option value="supervisor">🔑 Supervisor</option>
+                    <option value="view">👁️ Visitante</option>
+                </select>
+                <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR USUÁRIO</button>
+
+                <div id="areaMasterTorneios" class="card hidden" style="border: 1px solid var(--accent); margin-top: 20px; background: #222;">
+                    <h3 style="color: var(--accent);">📅 Configurar Torneio Oficial</h3>
+                    <input type="text" id="addLocal" placeholder="Local do Torneio">
+                    <input type="date" id="addData">
+                    <input type="text" id="addJuiz" placeholder="Nome do Juiz">
+                    <input type="number" id="addLimite" placeholder="Limite Máximo de Aves">
+                    <button class="btn" style="background: var(--accent); color: white;" onclick="criarTorneio()">CRIAR TORNEIO</button>
+                    <div id="listaTorneiosCriados" style="margin-top: 15px; font-size: 13px; text-align: left;"></div>
             </div>
             <button class="btn" style="background: #444;" onclick="location.reload()">SAIR / LOGOUT</button>
         </div>
