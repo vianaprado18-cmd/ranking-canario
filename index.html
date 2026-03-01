@@ -112,6 +112,22 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+// Adicione isso logo abaixo do firebase.initializeApp(firebaseConfig);
+firebase.database().ref(".info/connected").on("value", (snap) => {
+  if (snap.val() === true) {
+    console.log("Conectado ao Firebase com sucesso!");
+  } else {
+    console.warn("Falha na conexão com o Banco de Dados.");
+  }
+});
+// Adicione logo abaixo de: const db = firebase.database();
+db.ref(".info/connected").on("value", function(snap) {
+    if (snap.val() === true) {
+        console.log("Conectado ao Banco!");
+    } else {
+        alert("Atenção: Seu celular não está conseguindo conectar ao Banco de Dados. Verifique sua internet ou o link HTTPS.");
+    }
+});
 
     let userLogado = null;
     let dadosRanking = [];
@@ -127,6 +143,14 @@
             entrar({nome: 'matheus', role: 'admin'});
             return;
         }
+// Localize essa linha dentro da função validarLogin:
+const u = document.getElementById('userInput').value.toLowerCase().trim();
+
+// E garanta que o teste do Matheus aceite qualquer jeito:
+if(u === 'matheus' && p === 'admin123') { 
+    entrar({nome: 'matheus', role: 'admin'}); 
+    return; 
+}
 
         // BUSCA NO BANCO DE DADOS
         try {
