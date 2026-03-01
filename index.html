@@ -42,6 +42,15 @@
             <div id="link-historico" class="tab-link" onclick="showTab('historico')">📊 Histórico</div>
             <div id="link-admin" class="tab-link hidden" onclick="showTab('admin')">⚙️ Matheus</div>
         </div>
+<div id="link-agenda" class="tab-link" onclick="showTab('agenda')">📅 Agenda</div>
+
+<div id="tab-agenda" class="hidden">
+    <div class="card">
+        <h3 style="color: var(--accent);">📅 Próximos Torneios</h3>
+        <p style="font-size: 13px; color: #888;">Torneios oficiais agendados</p>
+        <div id="listaAgendaTorneios" style="text-align: left;"></div>
+    </div>
+</div>
 
         <div id="tab-ranking">
     <div class="card">
@@ -189,7 +198,7 @@ function escutarDados() {
     const local = document.getElementById('localEvento').value.trim();
     const data = document.getElementById('dataEvento').value;
     const tipo = document.getElementById('tipoEvento').value;
-
+if(t === 'agenda') carregarAgenda();
     if(!local || !data) return;
 
     // Criando o ID oficial (Ex: 2026-02-28_Campo_Novo)
@@ -402,6 +411,7 @@ function escutarDados() {
         document.getElementById('tab-'+t).classList.remove('hidden');
         document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
         document.getElementById('link-'+t).classList.add('active');
+if(t === 'agenda') carregarAgenda();
     }
 
     function excluirItem(id, anilha) {
@@ -432,6 +442,36 @@ function buscarRankingAntigo() {
         snap.forEach(c => { dadosRanking.push(c.val()); });
         renderizar(); // Mostra na tela
         alert("Ranking de " + data.split('-').reverse().join('/') + " carregado!");
+    });
+}
+function carregarAgenda() {
+    const hoje = new Date().toISOString().split('T')[0];
+    db.ref('lista_de_torneios').orderByChild('data').startAt(hoje).on('value', snap => {
+        const div = document.getElementById('listaAgendaTorneios');
+        div.innerHTML = "";
+        
+        if(!snap.exists()) {
+            div.innerHTML = "<p style='text-align:center; color:#666;'>Nenhum torneio futuro agendado.</p>";
+            return;
+        }
+
+        snap.forEach(t => {
+            const tor = t.val();
+            const dataFormatada = tor.data.split('-').reverse().join('/');
+            
+            div.innerHTML += `
+                <div class="card" style="background:#252525; border-left: 5px solid var(--accent); margin-bottom:10px; padding:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span>
+                            <b style="font-size:16px; color:var(--accent);">${tor.local.toUpperCase()}</b><br>
+                            <small>📅 ${dataFormatada} | 👨‍⚖️ Juiz: ${tor.juiz}</small>
+                        </span>
+                        <span style="background:var(--card); padding:5px 10px; border-radius:5px; font-size:12px;">
+                            Limite: ${tor.limite} aves
+                        </span>
+                    </div>
+                </div>`;
+        });
     });
 }
 </script>
