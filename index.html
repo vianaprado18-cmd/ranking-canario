@@ -227,14 +227,33 @@
     }
 
     function compartilharZap() {
-        if (dadosRanking.length === 0) return alert("Ranking vazio!");
-        const local = document.getElementById('localEvento').value || "Torneio";
-        let m = `🏆 *RANKING FIBRA - ${local.toUpperCase()}* 🏆\n\n`;
-        dadosRanking.forEach((p,i) => {
-            m += `*${i+1}º* ${p.nome.toUpperCase()}\n⏱️ ${p.tempo} | ${p.categoria}\n\n`;
-        });
-        window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(m));
+    const local = document.getElementById('localEvento').value || "Torneio";
+    const dataInput = document.getElementById('dataEvento').value;
+    const dataBr = dataInput ? dataInput.split('-').reverse().join('/') : "";
+    
+    if (dadosRanking.length === 0) {
+        return alert("O ranking está vazio! Lance as aves primeiro.");
     }
+
+    // Montando o cabeçalho da mensagem
+    let mensagem = `🏆 *RANKING FIBRA - ${local.toUpperCase()}* 🏆\n`;
+    if(dataBr) mensagem += `📅 DATA: ${dataBr}\n`;
+    mensagem += `\n--------------------------\n`;
+
+    // Adicionando cada ave do ranking (Top 10 ou todos)
+    dadosRanking.forEach((p, i) => {
+        mensagem += `*${i + 1}º* ${p.nome.toUpperCase()}\n`;
+        mensagem += `👤 ${p.dono} | ⏱️ *${p.tempo}*\n\n`;
+    });
+
+    mensagem += `--------------------------\n_Gerado por Fibra OS 🔰_`;
+
+    // O encodeURIComponent é essencial para o WhatsApp entender quebras de linha e emojis
+    const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensagem);
+    
+    // Abre em uma nova aba
+    window.open(url, '_blank');
+}
 
     function listarUsuarios() {
         db.ref('usuarios').on('value', snap => {
