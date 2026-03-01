@@ -44,11 +44,27 @@
         </div>
 <div id="link-agenda" class="tab-link" onclick="showTab('agenda')">📅 Agenda</div>
 
-<div id="tab-agenda" class="hidden">
+<div id="link-torneios" class="tab-link" onclick="showTab('torneios')">🏆 Torneios</div>
+
+<div id="tab-torneios" class="hidden">
     <div class="card">
-        <h3 style="color: var(--accent);">📅 Próximos Torneios</h3>
-        <p style="font-size: 13px; color: #888;">Torneios oficiais agendados</p>
-        <div id="listaAgendaTorneios" style="text-align: left;"></div>
+        <h3 style="color: var(--accent);">🏆 Torneios Disponíveis</h3>
+        <p style="font-size: 13px; color: #888;">Selecione um torneio para cadastrar sua ave</p>
+        <div id="listaTorneiosPublicos"></div>
+    </div>
+
+    <div id="janelaInscricao" class="card hidden" style="border: 2px solid var(--primary);">
+        <h4 id="nomeTorneioSelecionado" style="color: var(--primary);"></h4>
+        <input type="text" id="insaveDono" readonly style="background: #1a1a1a; color: #aaa;">
+        <input type="text" id="insaveNome" placeholder="Nome do Canário">
+        <input type="text" id="insaveAnilha" placeholder="Anilha (Ex: ABC 123)">
+        <select id="insaveCategoria">
+            <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
+            <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
+            <option value="Canto Livre">Canto Livre</option>
+        </select>
+        <button class="btn btn-save" onclick="confirmarInscricao()">FINALIZAR INSCRIÇÃO</button>
+        <button class="btn" style="background:#444;" onclick="fecharInscricao()">CANCELAR</button>
     </div>
 </div>
 
@@ -411,7 +427,8 @@ if(t === 'agenda') carregarAgenda();
         document.getElementById('tab-'+t).classList.remove('hidden');
         document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
         document.getElementById('link-'+t).classList.add('active');
-if(t === 'agenda') carregarAgenda();
+// ... seu código de abas ...
+    if(t === 'torneios') carregarTorneiosPublicos();
     }
 
     function excluirItem(id, anilha) {
@@ -472,6 +489,81 @@ function carregarAgenda() {
                     </div>
                 </div>`;
         });
+    });
+}
+let torneioAtivoId = null;
+
+// Carrega os torneios que o Matheus criou na aba Admin
+function carregarTorneiosPublicos() {
+    const hoje = new Date().toISOString().split('T')[0];
+    db.ref('lista_de_torneios').orderByChild('data').startAt(hoje).on('value', snap => {
+        const div = document.getElementById('listaTorneiosPublicos');
+        div.innerHTML = "";
+        
+        if(!snap.exists()) {
+            div.innerHTML = "<p>Nenhum torneio agendado no momento.</p>";
+            return;
+        }
+
+        snap.forEach(t => {
+            const tor = t.val();
+            div.innerHTML += `
+                <div class="ranking-item" style="background:#252525; margin-bottom:10px; border-radius:8px; padding:15px;">
+                    <span>
+                        <b>${tor.local.toUpperCase()}</b><br>
+                        <small>📅 ${tor.data.split('-').reverse().join('/')} | Juiz: ${tor.juiz}</small>
+                    </span>
+                    <button class="btn" style="width:auto; padding:10px; background:var(--primary);" 
+                        onclick="abrirInscricao('${tor.id}', '${tor.local}')">INSCREVER</button>
+                </div>`;
+        });
+    });
+}
+
+function abrirInscricao(id, local) {
+    torneioAtivoId = id;
+    document.getElementById('nomeTorneioSelecionado').innerText = "Inscrição: " + local;
+    document.getElementById('insaveDono').value = userLogado.nome.toUpperCase();
+    document.getElementById('janelaInscricao').classList.remove('hidden');
+    window.scrollTo(0, document.body.scrollHeight);
+}
+
+function fecharInscricao() {
+    document.getElementById('janelaInscricao').classList.add('hidden');
+    torneioAtivoId = null;
+}
+
+async function confirmarInscricao() {
+    const nome = document.getElementById('insaveNome').value.trim();
+    const anilha = document.getElementById('insaveAnilha').value.toUpperCase().trim();
+    const categoria = document.getElementById('insaveCategoria').value;
+
+    if(!nome || !anilha) return alert("Preencha nome e anilha!");
+
+    // Busca dados do torneio para garantir sincronia
+    const snapTor = await db.ref('lista_de_torneios/' + torneioAtivoId).once('value');
+    const infoT = snapTor.val();
+
+    const idUnico = Date.now();
+    const dadosAve = {
+        id_db: idUnico,
+        nome: nome,
+        anilha: anilha,
+        dono: userLogado.nome.toUpperCase(),
+        categoria: categoria,
+        tempo: "00:00:00",
+        juiz: infoT.juiz,
+        local: infoT.local,
+        data: infoT.data,
+        tipo: "Torneio"
+    };
+
+    db.ref('torneios/' + torneioAtivoId + '/' + idUnico).set(dadosAve).then(() => {
+        db.ref('historico_aves/' + anilha + '/' + idUnico).set(dadosAve);
+        alert("Inscrição confirmada para o torneio " + infoT.local);
+        fecharInscricao();
+        document.getElementById('insaveNome').value = "";
+        document.getElementById('insaveAnilha').value = "";
     });
 }
 </script>
