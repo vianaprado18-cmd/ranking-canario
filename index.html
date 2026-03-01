@@ -103,6 +103,12 @@
     <input type="date" id="addData">
     <button class="btn" style="background: var(--accent); color: white;" onclick="criarTorneio()">CRIAR TORNEIO OFICIAL</button>
     <div id="listaTorneiosCriados" style="margin-top: 15px; font-size: 13px; text-align: left;"></div>
+</div><div id="areaMasterTorneios" class="card hidden" style="border: 1px solid var(--accent); margin-top: 20px;">
+    <h3 style="color: var(--accent);">📅 Adicionar Novo Torneio</h3>
+    <input type="text" id="addLocal" placeholder="Nome do Torneio">
+    <input type="date" id="addData">
+    <button class="btn" style="background: var(--accent); color: white;" onclick="criarTorneio()">CRIAR TORNEIO OFICIAL</button>
+    <div id="listaTorneiosCriados" style="margin-top: 15px; font-size: 13px; text-align: left;"></div>
 </div>
             </div>
         </div>
@@ -149,16 +155,21 @@
     }
 
     function entrar(dados) {
-        userLogado = dados;
-        document.getElementById('loginSection').classList.add('hidden');
-        document.getElementById('appContent').classList.remove('hidden');
-        if(dados.role === 'admin') {
-            document.getElementById('link-admin').classList.remove('hidden');
-            listarUsuarios();
-        }
-        if(dados.role !== 'view') document.getElementById('link-lancar').classList.remove('hidden');
-        showTab('ranking');
+    userLogado = dados;
+    document.getElementById('loginSection').classList.add('hidden');
+    document.getElementById('appContent').classList.remove('hidden');
+
+    // VERIFICAÇÃO DE SEGURANÇA PARA O MATHEUS
+    if(dados.nome === 'matheus' && dados.role === 'admin') {
+        document.getElementById('link-admin').classList.remove('hidden');
+        document.getElementById('areaMasterTorneios').classList.remove('hidden'); // MOSTRA SÓ PARA VOCÊ
+        listarUsuarios();
+        listarTorneios(); // CARREGA A LISTA DE TORNEIOS
     }
+    
+    if(dados.role !== 'view') document.getElementById('link-lancar').classList.remove('hidden');
+    showTab('ranking');
+}
 
     function maskTempo(i) {
         let v = i.value.replace(/\D/g,'');
@@ -303,38 +314,34 @@
         const idT = document.getElementById('dataEvento').value + "_" + document.getElementById('localEvento').value.replace(/ /g,'_');
         db.ref('torneios/'+idT+'/'+id).remove();
         db.ref('historico_aves/'+anilha+'/'+id).remove();
-    }
-</script>
-// Função para o Matheus criar o torneio no banco de dados
-function criarTorneio() {
+    }function criarTorneio() {
     const local = document.getElementById('addLocal').value.trim();
     const data = document.getElementById('addData').value;
 
-    if(!local || !data) return alert("Preencha o nome e a data do torneio!");
+    if(!local || !data) return alert("Preencha nome e data!");
 
     const idT = data + "_" + local.replace(/ /g,'_');
     
-    // Salva uma referência do torneio para aparecer na lista
     db.ref('lista_de_torneios/' + idT).set({
         local: local,
         data: data,
         id: idT
     }).then(() => {
-        alert("Torneio criado com sucesso!");
+        alert("Torneio Criado!");
         document.getElementById('addLocal').value = "";
     });
 }
 
-// Função para listar os torneios criados (chame isso dentro da função entrar() se for admin)
 function listarTorneios() {
     db.ref('lista_de_torneios').on('value', snap => {
         const div = document.getElementById('listaTorneiosCriados');
         div.innerHTML = "<b>Torneios Ativos:</b><br>";
         snap.forEach(t => {
             const tor = t.val();
-            div.innerHTML += `📍 ${tor.local} (${tor.data.split('-').reverse().join('/')}) <br>`;
+            div.innerHTML += `📍 ${tor.local} (${tor.data.split('-').reverse().join('/')})<br>`;
         });
     });
 }
+</script>
 </body>
 </html>
