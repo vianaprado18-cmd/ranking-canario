@@ -80,16 +80,23 @@
             </div>
         </div>
 
-        <div id="tab-lancar" class="hidden">
-            <div class="card">
-                <h4>📍 Dados do Evento</h4>
-                <select id="tipoEvento">
-                    <option value="Torneio">🏆 Torneio Oficial</option>
-                    <option value="Treino">⏱️ Treino Livre</option>
-                </select>
-                <input type="text" id="localEvento" placeholder="Local" oninput="escutarDados()">
-                <input type="date" id="dataEvento" onchange="escutarDados()">
-            </div>
+            <div id="tab-lancar" class="hidden">
+            <div class="card">
+                <h4>📍 Dados do Evento</h4>
+                <select id="tipoEvento" onchange="escutarDados()">
+                    <option value="Torneio">🏆 Torneio Oficial</option>
+                    <option value="Treino">⏱️ Treino Livre</option>
+                </select>
+                <input type="text" id="localEvento" placeholder="Local (Ex: Campo Novo)" oninput="escutarDados()">
+                <input type="date" id="dataEvento" onchange="escutarDados()">
+                <select id="aveCategoria">
+                    <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
+                    <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
+                    <option value="Canto Livre Adulto">Canto Livre Adulto</option>
+                    <option value="Canto Livre Filhote">Canto Livre Filhote</option>
+                    <option value="Peito de Aço Adulto">Peito de Aço Adulto</option>
+                    <option value="Peito de Aço Filhote">Peito de Aço Filhote</option>
+                </select>
             <div class="card">
                 <h4>🐦 Registro Manual</h4>
                 <input type="text" id="aveNome" placeholder="Nome da Ave">
