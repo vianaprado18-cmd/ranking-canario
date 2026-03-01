@@ -208,48 +208,76 @@
     }
 
     async function salvarResultado() {
-        const local = document.getElementById('localEvento').value;
-        const data = document.getElementById('dataEvento').value;
-        const tipo = document.getElementById('tipoEvento').value;
-        const idT = data + "_" + local.replace(/ /g,'_');
+    const local = document.getElementById('localEvento').value.trim();
+    const data = document.getElementById('dataEvento').value;
+    const tipo = document.getElementById('tipoEvento').value;
+    
+    if(!local || !data) return alert("Selecione o Local e a Data primeiro!");
 
-        // Validação de limite para Torneios
-        if(tipo === "Torneio") {
-            const snapConfig = await db.ref('lista_de_torneios/' + idT).once('value');
-            const config = snapConfig.val();
-            if(config && dadosRanking.length >= config.limite) {
-                return alert("❌ LIMITE ATINGIDO: " + config.limite + " aves!");
-            }
-            var juizAtual = config ? config.juiz : "Não definido";
-        } else {
-            var juizAtual = "Treino Livre";
+    const idT = data + "_" + local.replace(/ /g,'_');
+    let juizAtual = "---"; // Padrão para treino
+
+    // Só busca Juiz e valida limite se for TORNEIO
+    if(tipo === "Torneio") {
+        const snapConfig = await db.ref('lista_de_torneios/' + idT).once('value');
+        const config = snapConfig.val();
+        
+        if(!config) {
+            return alert("Este torneio não foi criado pelo Matheus na aba Admin!");
         }
 
-        const anilha = document.getElementById('aveAnilha').value.toUpperCase().trim();
-        const tempo = document.getElementById('aveTempo').value;
-        if(!anilha || tempo.length < 8) return alert("Verifique anilha e tempo!");
-
-        const info = { 
-            id_db: Date.now(), 
-            nome: document.getElementById('aveNome').value, 
-            dono: document.getElementById('aveDono').value, 
-            anilha: anilha, 
-            tempo: tempo, 
-            categoria: document.getElementById('aveCategoria').value,
-            tipo: tipo,
-            juiz: juizAtual,
-            data: data, 
-            local: local 
-        };
-        
-        db.ref('torneios/'+idT+'/'+info.id_db).set(info).then(() => {
-            db.ref('historico_aves/'+anilha+'/'+info.id_db).set(info);
-            alert("Sucesso!");
-            document.getElementById('aveNome').value = ""; 
-            document.getElementById('aveAnilha').value = ""; 
-            document.getElementById('aveTempo').value = "";
-        });
+        if(dadosRanking.length >= config.limite) {
+            return alert("❌ LIMITE ATINGIDO: Máximo de " + config.limite + " aves!");
+        }
+        juizAtual = config.juiz;
     }
+
+    const anilha = document.getElementById('aveAnilha').value.toUpperCase().trim();
+    const tempo = document.getElementById('aveTempo').value;
+    const nomeAve = document.getElementById('aveNome').value.trim();
+    const dono = document.getElementById('aveDono').value.trim();
+    const categoria = document.getElementById('aveCategoria').value;
+
+    if(!anilha || tempo.length < 5 || !nomeAve) return alert("Preencha os dados da ave!");
+
+    // IMPORTANTE: Criamos um ID ÚNICO baseado no tempo para evitar duplicação por clique duplo
+    const idUnico = Date.now(); 
+
+    const info = { 
+        id_db: idUnico, 
+        nome: nomeAve, 
+        dono: dono, 
+        anilha: anilha, 
+        tempo: tempo, 
+        categoria: categoria,
+        tipo: tipo,
+        juiz: juizAtual, // Aqui ele salva o Juiz ou o "---" do treino
+        data: data, 
+        local: local 
+    };
+    
+    // Bloqueia o botão temporariamente para evitar múltiplos cliques
+    const btn = document.querySelector('.btn-save');
+    btn.disabled = true;
+    btn.innerText = "SALVANDO...";
+
+    db.ref('torneios/'+idT+'/'+idUnico).set(info).then(() => {
+        db.ref('historico_aves/'+anilha+'/'+idUnico).set(info);
+        alert("✅ Registrado com sucesso!");
+        
+        // Limpa os campos para o próximo registro
+        document.getElementById('aveNome').value = ""; 
+        document.getElementById('aveAnilha').value = ""; 
+        document.getElementById('aveTempo').value = "";
+        
+        btn.disabled = false;
+        btn.innerText = "REGISTRAR AGORA";
+    }).catch(err => {
+        btn.disabled = false;
+        btn.innerText = "REGISTRAR AGORA";
+        alert("Erro ao salvar!");
+    });
+}
 
     function criarTorneio() {
         const local = document.getElementById('addLocal').value.trim();
