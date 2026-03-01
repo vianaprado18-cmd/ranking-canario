@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fibra OS v16.6 - Campo Novo</title>
+    <title>Fibra OS v16.7 - Oficial</title>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     <style>
@@ -17,9 +17,11 @@
         input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #2d2d2d; color: white; box-sizing: border-box; font-size: 16px; }
         .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-save { background: var(--primary); color: white; }
+        .btn-zap { background: #25d366; color: white; margin-top: 20px; }
         .btn-del { background: none; border: none; color: var(--danger); cursor: pointer; font-weight: bold; }
         .hidden { display: none !important; }
         .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #444; text-align: left; }
+        .tempo-destaque { color: var(--primary); font-family: monospace; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -27,11 +29,10 @@
 <div class="container">
     <div id="loginSection" class="card">
         <h2 style="color: var(--primary);">🔰 FIBRA LOGIN</h2>
-        <p style="font-size: 12px; color: #888;">Digite os dados para acessar</p>
-        <input type="text" id="userInput" placeholder="Usuário (ex: matheus)">
+        <input type="text" id="userInput" placeholder="Usuário">
         <input type="password" id="userPass" placeholder="Senha">
-        <button class="btn btn-save" onclick="validarLogin()">ENTRAR NO SISTEMA</button>
-        <p id="loginError" style="color: var(--danger); font-size: 13px; margin-top: 10px; display: none;">Usuário ou senha incorretos!</p>
+        <button class="btn btn-save" onclick="validarLogin()">ENTRAR</button>
+        <p id="loginError" style="color: var(--danger); font-size: 13px; margin-top: 10px; display: none;">Dados incorretos!</p>
     </div>
 
     <div id="appContent" class="hidden">
@@ -46,30 +47,29 @@
             <div class="card">
                 <h3 id="displayEvento" style="color: var(--accent);">Selecione o Torneio</h3>
                 <div id="listaRanking"></div>
-<button class="btn btn-zap" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
+                <button class="btn btn-zap" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
             </div>
         </div>
 
         <div id="tab-lancar" class="hidden">
             <div class="card">
-                <h4>📍 Dados do Torneio e Treino</h4>
+                <h4>📍 Torneio / Treino</h4>
                 <input type="text" id="localEvento" placeholder="Local (Ex: Campo Novo)" oninput="escutarDados()">
                 <input type="date" id="dataEvento" onchange="escutarDados()">
-<label style="font-size: 12px; color: var(--accent);">Selecione a Categoria:</label>
-<select id="aveCategoria">
-    <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
-    <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
-    <option value="Canto Livre Adulto">Canto Livre Adulto</option>
-    <option value="Canto Livre Filhote">Canto Livre Filhote</option>
-    <option value="Peito de Aço Adulto">Peito de Aço Adulto</option>
-    <option value="Peito de Aço Filhote">Peito de Aço Filhote</option>
-</select>
+                <select id="aveCategoria">
+                    <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
+                    <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
+                    <option value="Canto Livre Adulto">Canto Livre Adulto</option>
+                    <option value="Canto Livre Filhote">Canto Livre Filhote</option>
+                    <option value="Peito de Aço Adulto">Peito de Aço Adulto</option>
+                    <option value="Peito de Aço Filhote">Peito de Aço Filhote</option>
+                </select>
             </div>
             <div class="card">
-                <h4>🐦 Lançar Ave (00:00:00)</h4>
+                <h4>🐦 Registro</h4>
                 <input type="text" id="aveNome" placeholder="Nome da Ave">
                 <input type="text" id="aveDono" placeholder="Proprietário">
-                <input type="text" id="aveAnilha" placeholder="Número da Anilha">
+                <input type="text" id="aveAnilha" placeholder="Anilha">
                 <input type="text" id="aveTempo" placeholder="00:00:00" oninput="maskTempo(this)" maxlength="8">
                 <button class="btn btn-save" onclick="salvarResultado()">REGISTRAR AGORA</button>
             </div>
@@ -85,18 +85,18 @@
 
         <div id="tab-admin" class="hidden">
             <div class="card">
-                <h3>👥 Gestão Master</h3>
+                <h3>👥 Gestão</h3>
                 <div id="listaUsuarios"></div>
                 <hr style="border:1px solid #333; margin:15px 0;">
-                <input type="text" id="nUser" placeholder="Novo Login">
-                <input type="text" id="nPass" placeholder="Nova Senha">
+                <input type="text" id="nUser" placeholder="Login">
+                <input type="text" id="nPass" placeholder="Senha">
                 <select id="nRole">
                     <option value="admin">🏆 Admin</option>
                     <option value="supervisor">🔑 Supervisor</option>
                     <option value="view">👁️ Visitante</option>
                 </select>
-                <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR NOVO USUÁRIO</button>
-                <button class="btn" style="background: #444; color: white;" onclick="location.reload()">SAIR / LOGOUT</button>
+                <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR USUÁRIO</button>
+                <button class="btn" style="background: #444;" onclick="location.reload()">SAIR</button>
             </div>
         </div>
     </div>
@@ -112,47 +112,25 @@
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-// Adicione isso logo abaixo do firebase.initializeApp(firebaseConfig);
-firebase.database().ref(".info/connected").on("value", (snap) => {
-  if (snap.val() === true) {
-    console.log("Conectado ao Firebase com sucesso!");
-  } else {
-    console.warn("Falha na conexão com o Banco de Dados.");
-  }
-});
-// Adicione logo abaixo de: const db = firebase.database();
-db.ref(".info/connected").on("value", function(snap) {
-    if (snap.val() === true) {
-        console.log("Conectado ao Banco!");
-    } else {
-        alert("Atenção: Seu celular não está conseguindo conectar ao Banco de Dados. Verifique sua internet ou o link HTTPS.");
-    }
-});
 
     let userLogado = null;
     let dadosRanking = [];
 
-    // FUNÇÃO DE LOGIN CORRIGIDA
+    // Verificador de Conexão
+    db.ref(".info/connected").on("value", (snap) => {
+        if (snap.val() !== true) console.warn("Desconectado do Banco");
+    });
+
     async function validarLogin() {
         const u = document.getElementById('userInput').value.toLowerCase().trim();
         const p = document.getElementById('userPass').value.trim();
         const erroMsg = document.getElementById('loginError');
 
-        // ACESSO MESTRE GARANTIDO
         if(u === 'matheus' && p === 'admin123') {
             entrar({nome: 'matheus', role: 'admin'});
             return;
         }
-// Localize essa linha dentro da função validarLogin:
-const u = document.getElementById('userInput').value.toLowerCase().trim();
 
-// E garanta que o teste do Matheus aceite qualquer jeito:
-if(u === 'matheus' && p === 'admin123') { 
-    entrar({nome: 'matheus', role: 'admin'}); 
-    return; 
-}
-
-        // BUSCA NO BANCO DE DADOS
         try {
             const snap = await db.ref('usuarios/' + u).once('value');
             if(snap.exists() && snap.val().senha === p) {
@@ -160,23 +138,18 @@ if(u === 'matheus' && p === 'admin123') {
             } else {
                 erroMsg.style.display = 'block';
             }
-        } catch(e) {
-            alert("Erro ao conectar ao banco. Verifique sua internet.");
-        }
+        } catch(e) { alert("Erro de conexão."); }
     }
 
     function entrar(dados) {
         userLogado = dados;
         document.getElementById('loginSection').classList.add('hidden');
         document.getElementById('appContent').classList.remove('hidden');
-        
         if(dados.role === 'admin') {
             document.getElementById('link-admin').classList.remove('hidden');
             listarUsuarios();
         }
-        if(dados.role !== 'view') {
-            document.getElementById('link-lancar').classList.remove('hidden');
-        }
+        if(dados.role !== 'view') document.getElementById('link-lancar').classList.remove('hidden');
         showTab('ranking');
     }
 
@@ -193,8 +166,9 @@ if(u === 'matheus' && p === 'admin123') {
         const data = document.getElementById('dataEvento').value;
         if(!local || !data) return;
         const id = data + "_" + local.replace(/ /g,'_');
-        document.getElementById('displayEvento').innerText = local.toUpperCase();
-        db.ref('torneios/'+id).on('value', snap => {
+        document.getElementById('displayEvento').innerText = local.toUpperCase() + " - " + data.split('-').reverse().join('/');
+        
+        db.ref('torneios/' + id).on('value', snap => {
             dadosRanking = [];
             snap.forEach(c => { dadosRanking.push(c.val()); });
             renderizar();
@@ -203,10 +177,18 @@ if(u === 'matheus' && p === 'admin123') {
 
     function renderizar() {
         dadosRanking.sort((a,b) => b.tempo.localeCompare(a.tempo));
-        const div = document.getElementById('listaRanking'); div.innerHTML = "";
+        const div = document.getElementById('listaRanking');
+        div.innerHTML = "";
+        if(dadosRanking.length === 0) {
+            div.innerHTML = "<p style='color:#666;'>Aguardando registros...</p>";
+            return;
+        }
         dadosRanking.forEach((p,i) => {
             let del = (userLogado.role === 'admin') ? `<button class="btn-del" onclick="excluirItem('${p.id_db}','${p.anilha}')">✘</button>` : '';
-            div.innerHTML += `<div class="ranking-item"><span><b>${i+1}º</b> ${p.nome} (${p.dono}) ${del}</span><b>${p.tempo}</b></div>`;
+            div.innerHTML += `<div class="ranking-item">
+                <span><b>${i+1}º</b> ${p.nome.toUpperCase()} (${p.dono}) <br><small>${p.categoria}</small></span>
+                <span class="tempo-destaque">${p.tempo} ${del}</span>
+            </div>`;
         });
     }
 
@@ -215,22 +197,43 @@ if(u === 'matheus' && p === 'admin123') {
         const data = document.getElementById('dataEvento').value;
         const anilha = document.getElementById('aveAnilha').value.toUpperCase().trim();
         const tempo = document.getElementById('aveTempo').value;
+        const categoria = document.getElementById('aveCategoria').value;
 
-        if(!local || !data || !anilha || tempo.length < 8) return alert("Preencha Local, Data, Anilha e Tempo!");
+        if(!local || !data || !anilha || tempo.length < 8) return alert("Preencha tudo!");
 
-        // VERIFICA SE JÁ EXISTE NO RANKING LOCAL (EVITA DUPLICADO)
         if (dadosRanking.find(ave => ave.anilha === anilha)) {
-            return alert("ERRO: Esta anilha já foi registrada hoje!");
+            return alert("ERRO: Anilha já registrada hoje!");
         }
 
         const idT = data + "_" + local.replace(/ /g,'_');
-        const info = { id_db: Date.now(), nome: document.getElementById('aveNome').value, dono: document.getElementById('aveDono').value, anilha: anilha, tempo: tempo, data: data, local: local };
+        const info = { 
+            id_db: Date.now(), 
+            nome: document.getElementById('aveNome').value, 
+            dono: document.getElementById('aveDono').value, 
+            anilha: anilha, 
+            tempo: tempo, 
+            categoria: categoria,
+            data: data, 
+            local: local 
+        };
         
         db.ref('torneios/'+idT+'/'+info.id_db).set(info).then(() => {
             db.ref('historico_aves/'+anilha+'/'+info.id_db).set(info);
-            alert("Sucesso!");
-            document.getElementById('aveNome').value = ""; document.getElementById('aveAnilha').value = ""; document.getElementById('aveTempo').value = "";
+            alert("Registrado!");
+            document.getElementById('aveNome').value = ""; 
+            document.getElementById('aveAnilha').value = ""; 
+            document.getElementById('aveTempo').value = "";
         });
+    }
+
+    function compartilharZap() {
+        if (dadosRanking.length === 0) return alert("Ranking vazio!");
+        const local = document.getElementById('localEvento').value || "Torneio";
+        let m = `🏆 *RANKING FIBRA - ${local.toUpperCase()}* 🏆\n\n`;
+        dadosRanking.forEach((p,i) => {
+            m += `*${i+1}º* ${p.nome.toUpperCase()}\n⏱️ ${p.tempo} | ${p.categoria}\n\n`;
+        });
+        window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(m));
     }
 
     function listarUsuarios() {
@@ -238,27 +241,27 @@ if(u === 'matheus' && p === 'admin123') {
             const div = document.getElementById('listaUsuarios'); div.innerHTML = "";
             snap.forEach(u => {
                 const user = u.val();
-                div.innerHTML += `<div class="ranking-item"><span>${user.nome} (${user.role})</span><button class="btn-del" onclick="excluirUsuario('${user.nome}')">✘</button></div>`;
+                div.innerHTML += `<div class="ranking-item"><span>${user.nome}</span><button class="btn-del" onclick="excluirUsuario('${user.nome}')">✘</button></div>`;
             });
         });
     }
 
-    function excluirUsuario(n) { if(n !== 'matheus' && confirm("Excluir?")) db.ref('usuarios/'+n).remove(); }
-    
     function cadastrarUsuario() {
         const n = document.getElementById('nUser').value.toLowerCase().trim();
         const p = document.getElementById('nPass').value.trim();
         if(!n || !p) return alert("Preencha tudo!");
         db.ref('usuarios/'+n).set({nome:n, senha:p, role:document.getElementById('nRole').value});
-        alert("Usuário Criado!");
+        alert("Criado!");
     }
+
+    function excluirUsuario(n) { if(n !== 'matheus' && confirm("Excluir?")) db.ref('usuarios/'+n).remove(); }
 
     function pesquisarAve() {
         const a = document.getElementById('buscaAnilha').value.toUpperCase();
         if(a.length < 2) return;
         db.ref('historico_aves/'+a).on('value', snap => {
             const res = document.getElementById('resBusca'); res.innerHTML = "";
-            snap.forEach(c => { const r = c.val(); res.innerHTML += `<div class="ranking-item"><span>${r.data}</span><b>${r.tempo}</b></div>`; });
+            snap.forEach(c => { const r = c.val(); res.innerHTML += `<div class="ranking-item"><span>${r.data} - ${r.local}</span><b>${r.tempo}</b></div>`; });
         });
     }
 
@@ -270,85 +273,11 @@ if(u === 'matheus' && p === 'admin123') {
     }
 
     function excluirItem(id, anilha) {
-        if(!confirm("Excluir registro?")) return;
+        if(!confirm("Excluir?")) return;
         const idT = document.getElementById('dataEvento').value + "_" + document.getElementById('localEvento').value.replace(/ /g,'_');
         db.ref('torneios/'+idT+'/'+id).remove();
         db.ref('historico_aves/'+anilha+'/'+id).remove();
     }
-function compartilharZap() {
-    const local = document.getElementById('localEvento').value || "Torneio";
-    const dataInput = document.getElementById('dataEvento').value;
-    const dataBr = dataInput ? dataInput.split('-').reverse().join('/') : "";
-// Dentro do forEach da função compartilharZap:
-mensagem += `*${i + 1}º* ${p.nome.toUpperCase()} (${p.categoria})\n`;
-    
-    if (dadosRanking.length === 0) {
-        return alert("O ranking está vazio! Lance as aves primeiro.");
-    }
-
-    // Montando o cabeçalho da mensagem
-    let mensagem = `🏆 *RANKING FIBRA - ${local.toUpperCase()}* 🏆\n`;
-    if(dataBr) mensagem += `📅 DATA: ${dataBr}\n`;
-    mensagem += `\n--------------------------\n`;
-
-    // Adicionando cada ave do ranking (Top 10 ou todos)
-    dadosRanking.forEach((p, i) => {
-        mensagem += `*${i + 1}º* ${p.nome.toUpperCase()}\n`;
-        mensagem += `👤 ${p.dono} | ⏱️ *${p.tempo}*\n\n`;
-    });
-
-    mensagem += `--------------------------\n_Gerado por Fibra OS 🔰_`;
-
-    // O encodeURIComponent é essencial para o WhatsApp entender quebras de linha e emojis
-    const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensagem);
-    
-    // Abre em uma nova aba
-    window.open(url, '_blank');
-function escutarDados() {
-    const local = document.getElementById('localEvento').value;
-    const data = document.getElementById('dataEvento').value;
-    
-    // Só executa se o local e a data estiverem preenchidos
-    if(!local || !data) return;
-
-    // Cria a identificação única do dia (Ex: 2024-02-28_Campo_Novo)
-    const idTorneio = data + "_" + local.replace(/ /g,'_');
-    
-    // Mostra no título o que está sendo filtrado
-    document.getElementById('displayEvento').innerText = local.toUpperCase() + " - " + data.split('-').reverse().join('/');
-
-    // ESTE É O COMANDO PRINCIPAL:
-    // O '.on' faz o Firebase avisar o app toda vez que algo novo for salvo
-    db.ref('torneios/' + idTorneio).on('value', snap => {
-        dadosRanking = [];
-        snap.forEach(ave => {
-            dadosRanking.push(ave.val());
-        });
-        // Chama a função que desenha a lista na tela
-        renderizar(); 
-    });
-function renderizar() {
-    // Ordena do maior tempo para o menor
-    dadosRanking.sort((a,b) => b.tempo.localeCompare(a.tempo));
-    
-    const div = document.getElementById('listaRanking'); 
-    div.innerHTML = ""; // Limpa a tela para não duplicar
-
-    if(dadosRanking.length === 0) {
-        div.innerHTML = "<p style='text-align:center; color:#888;'>Nenhuma ave lançada hoje.</p>";
-        return;
-    }
-
-    dadosRanking.forEach((p, i) => {
-        // Cria a linha com o nome da ave e o tempo
-        div.innerHTML += `
-            <div class="ranking-item">
-                <span><b>${i+1}º</b> ${p.nome.toUpperCase()} (${p.dono})</span>
-                <b class="tempo-destaque">${p.tempo}</b>
-            </div>`;
-    });
-}
-}
 </script>
 </body>
 </html>
