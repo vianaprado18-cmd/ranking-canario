@@ -44,10 +44,21 @@
         </div>
 
         <div id="tab-ranking">
-            <div class="card">
-                <h3 id="displayEvento" style="color: var(--accent);">Selecione o Torneio</h3>
-                <div id="listaRanking"></div>
-                <button class="btn btn-zap" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
+    <div class="card">
+        <h3 style="color: var(--accent);">📊 Consultar Resultados</h3>
+        <p style="font-size: 12px; color: #888;">Selecione para carregar o ranking e enviar ao Zap</p>
+        
+        <input type="text" id="filtroLocal" placeholder="Local (Ex: Campo Novo)">
+        <input type="date" id="filtroData">
+        <button class="btn" style="background: var(--accent); color: white;" onclick="buscarRankingAntigo()">CARREGAR RANKING</button>
+        
+        <hr style="border: 0.5px solid #333; margin: 20px 0;">
+        
+        <h3 id="displayEvento" style="color: var(--primary);">Selecione um evento</h3>
+        <div id="listaRanking"></div>
+        <button class="btn btn-zap" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
+    </div>
+</div>
             </div>
         </div>
 
@@ -399,6 +410,30 @@ function escutarDados() {
         db.ref('torneios/'+idT+'/'+id).remove();
         db.ref('historico_aves/'+anilha+'/'+id).remove();
     }
+function buscarRankingAntigo() {
+    const local = document.getElementById('filtroLocal').value.trim();
+    const data = document.getElementById('filtroData').value;
+
+    if(!local || !data) return alert("Informe o Local e a Data para buscar!");
+
+    const id = data + "_" + local.replace(/ /g,'_');
+    
+    // Atualiza o título na tela
+    document.getElementById('displayEvento').innerText = "BUSCANDO: " + local.toUpperCase();
+
+    // Busca no Firebase
+    db.ref('torneios/' + id).once('value', snap => {
+        dadosRanking = [];
+        if(!snap.exists()) {
+            document.getElementById('listaRanking').innerHTML = "<p style='color:var(--danger);'>Nenhum registro encontrado nesta data.</p>";
+            return;
+        }
+        
+        snap.forEach(c => { dadosRanking.push(c.val()); });
+        renderizar(); // Mostra na tela
+        alert("Ranking de " + data.split('-').reverse().join('/') + " carregado!");
+    });
+}
 </script>
 </body>
 </html>
