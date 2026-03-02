@@ -26,22 +26,6 @@
 </style>
 </head>
 <body>
-body {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    min-height: 100vh;
-    /* ABAIXO: Cole o link da sua foto entre as aspas */
-    background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
-                      url('https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&q=80&w=1470'); 
-    
-    background-size: cover; /* Faz a foto cobrir a tela toda */
-    background-position: center; /* Centraliza a imagem */
-    background-attachment: fixed; /* A foto não mexe quando você rola a página */
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    color: #e0e0e0;
-}
-
 <div class="container">
     <div id="loginSection" class="card">
         <h2 style="color: var(--primary);">🔰 FIBRA LOGIN</h2>
@@ -230,25 +214,48 @@ body {
 
     // --- FUNÇÕES DE TORNEIOS (ACRÉSCIMO) ---
 
-    function criarTorneio() {
-        const info = {
-            local: document.getElementById('tLocal').value,
-            data: document.getElementById('tData').value,
-            fimInscricao: document.getElementById('tDataFimInscricao').value,
-            juiz: document.getElementById('tJuiz').value,
-            maxAves: document.getElementById('tMaxAves').value,
-            obs: document.getElementById('tObs').value,
-            status: "aberto",
-            id: Date.now()
-        };
-        if(!info.local || !info.data) return alert("Preencha Local e Data!");
-        
-        db.ref('agenda_torneios/' + info.id).set(info).then(() => {
-            alert("Torneio Criado com Sucesso!");
-            // Limpa os campos
-            document.querySelectorAll('#area-criacao-torneio input, #area-criacao-torneio textarea').forEach(i => i.value = "");
-        });
+function criarTorneio() {
+    // Pegando os valores dos campos
+    const local = document.getElementById('tLocal').value;
+    const data = document.getElementById('tData').value;
+    const juiz = document.getElementById('tJuiz').value;
+    const max = document.getElementById('tMaxAves').value;
+    const obs = document.getElementById('tObs').value;
+
+    // Teste de segurança: Se não tiver local ou data, ele para aqui
+    if(!local || !data) {
+        alert("⚠️ ATENÇÃO: Você precisa preencher o LOCAL e a DATA para publicar!");
+        return;
     }
+
+    const idTorneio = Date.now(); // Cria um ID único baseado na hora atual
+
+    const dadosParaSalvar = {
+        id: idTorneio,
+        local: local,
+        data: data,
+        juiz: juiz || "Não informado",
+        maxAves: max || 0,
+        obs: obs || "",
+        status: "aberto"
+    };
+
+    // Salvando no Firebase
+    db.ref('agenda_torneios/' + idTorneio).set(dadosParaSalvar)
+    .then(() => {
+        alert("✅ SUCESSO! O torneio foi publicado e já aparece na lista.");
+        // Limpa os campos após salvar
+        document.getElementById('tLocal').value = "";
+        document.getElementById('tData').value = "";
+        document.getElementById('tJuiz').value = "";
+        document.getElementById('tMaxAves').value = "";
+        document.getElementById('tObs').value = "";
+    })
+    .catch((erro) => {
+        console.error(erro);
+        alert("❌ ERRO AO SALVAR: Verifique sua conexão ou as permissões do Firebase.");
+    });
+}
 
     function listarTorneios() {
         db.ref('agenda_torneios').on('value', snap => {
