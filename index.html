@@ -45,14 +45,18 @@
 <div id="tab-torneios" class="hidden">
     <div class="painel-torneios">
         
-        <div id="area-criacao-torneio" class="card hidden">
-            <h3 style="color: #2ecc71; margin-top:0;">🛠️ Configurar Novo Torneio</h3>
-            <input type="text" id="tLocal" placeholder="Local do Torneio">
-            <input type="date" id="tData">
-            <input type="text" id="tJuiz" placeholder="Juiz Responsável">
-            <input type="number" id="tMaxAves" placeholder="Limite de Aves">
-            <button class="btn btn-save" onclick="criarTorneio()" style="width:100%; background:#2ecc71; color:white; padding:15px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; margin-top:10px;">PUBLICAR EVENTO</button>
-        </div>
+       <div id="area-criacao-torneio" class="card">
+    <h3 style="color: #2ecc71;">🛠️ Configurar Novo Torneio</h3>
+    
+    <input type="text" id="tLocal" placeholder="Local do Torneio">
+    <input type="date" id="tData">
+    <input type="text" id="tJuiz" placeholder="Juiz Responsável">
+    <input type="number" id="tMaxAves" placeholder="Limite de Aves">
+    
+    <textarea id="tObs" placeholder="Observações do Torneio" rows="3"></textarea>
+    
+    <button class="btn btn-save" onclick="criarTorneio()">PUBLICAR EVENTO</button>
+</div>
 
         <div class="card">
             <h3 style="margin-top:0;">🏆 Torneios Disponíveis</h3>
@@ -163,7 +167,7 @@
         const p = document.getElementById('userPass').value.trim();
         
         // ACESSO MESTRE: MATHEUS TEM TUDO
-        if(u === 'matheus' && p === 'admin123') {
+        if(u === 'matheus' && p === '1234') {
             entrar({nome: 'MATHEUS', role: 'admin'});
             return;
         }
