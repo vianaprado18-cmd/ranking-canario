@@ -24,35 +24,57 @@
         .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; display: inline-block; }
         .tempo-destaque { color: var(--primary); font-family: monospace; font-size: 18px; font-weight: bold; }
 </script>
-/* Garante que as abas fiquem em linha e não uma embaixo da outra */
+/* Container principal dos Torneios */
+.painel-torneios {
+    display: flex;
+    flex-direction: row; /* Coloca lado a lado */
+    gap: 20px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+/* Garante que os cards ocupem o mesmo espaço */
+.painel-torneios .card {
+    flex: 1; /* Divide o espaço igualmente */
+    min-width: 300px;
+}
+
+/* Ajuste das Abas de cima */
 .nav-tabs {
-    display: flex;
-    justify-content: center; /* Centraliza as opções */
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: flex-start;
     gap: 15px;
-    background: #121212;
-    padding: 15px 0;
-    border-bottom: 2px solid #333;
+    margin-bottom: 20px;
+    overflow-x: auto;
 }
 
-/* Estilo do Card de Torneios Disponíveis */
-.card-torneio {
-    background: #1e1e1e;
-    border: 1px solid #333;
-    border-radius: 12px;
-    padding: 20px;
-    margin-top: 20px;
-    text-align: left; /* Alinha o conteúdo à esquerda */
+/* No celular, volta a ficar um embaixo do outro para não esmagar */
+@media (max-width: 768px) {
+    .painel-torneios {
+        flex-direction: column;
+    }
+    .painel-torneios .card {
+        width: 100%;
+    }
 }
 
-/* Estilo dos itens da lista de torneios */
-.torneio-item {
+/* Ajuste da grid de inputs */
+.grid-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+textarea {
+    width: 100%;
     background: #2d2d2d;
-    padding: 15px;
+    color: white;
     border-radius: 8px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 10px;
+    border: 1px solid #333;
+    margin-top: 10px;
+    box-sizing: border-box;
 }
     </style>
 </head>
@@ -75,26 +97,27 @@
 <div id="link-torneios" class="tab-link" onclick="showTab('torneios')">📅 Torneios</div>
             <div id="link-admin" class="tab-link hidden" onclick="showTab('admin')">⚙️ Admin</div>
 <div id="tab-torneios" class="hidden">
-    <div id="area-criacao-torneio" class="card hidden" style="margin-bottom: 20px;">
-        <h3 style="color: var(--primary);">🛠️ Configurar Novo Torneio</h3>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <input type="text" id="tLocal" placeholder="Local">
-            <input type="date" id="tData">
-            <input type="text" id="tJuiz" placeholder="Juiz Responsável">
-            <input type="number" id="tMaxAves" placeholder="Limite de Aves">
-        </div>
-        <textarea id="tObs" placeholder="Observações do Torneio" rows="3" style="width:100%; margin-top:10px;"></textarea>
-        <button class="btn btn-save" onclick="criarTorneio()">PUBLICAR EVENTO</button>
-    </div>
-
-    <div class="card-torneio">
-        <h3 style="display: flex; align-items: center; gap: 10px;">
-            <span style="color: var(--accent);">🏆</span> Torneios Disponíveis
-        </h3>
-        <p style="color: #888; font-size: 14px;">Selecione um evento abaixo para realizar sua inscrição.</p>
-        <hr style="border: 0.5px solid #333; margin: 15px 0;">
-        <div id="listaTorneiosAtivos">
+    <div class="painel-torneios">
+        
+        <div id="area-criacao-torneio" class="card hidden">
+            <h3 style="color: var(--primary); margin-top:0;">🛠️ Configurar Novo Torneio</h3>
+            <div class="grid-form">
+                <input type="text" id="tLocal" placeholder="Local">
+                <input type="date" id="tData">
+                <input type="text" id="tJuiz" placeholder="Juiz">
+                <input type="number" id="tMaxAves" placeholder="Limite Aves">
             </div>
+            <textarea id="tObs" placeholder="Observações do Torneio" rows="3"></textarea>
+            <button class="btn btn-save" onclick="criarTorneio()">PUBLICAR EVENTO</button>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-top:0;">🏆 Torneios Disponíveis</h3>
+            <p style="color: #888; font-size: 13px;">Selecione abaixo para se inscrever:</p>
+            <hr style="border: 0.5px solid #333; margin: 10px 0;">
+            <div id="listaTorneiosAtivos"></div>
+        </div>
+
     </div>
 </div>
     
