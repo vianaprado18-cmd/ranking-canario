@@ -44,24 +44,29 @@
 <div id="link-torneios" class="tab-link" onclick="showTab('torneios')">📅 Torneios</div>
             <div id="link-admin" class="tab-link hidden" onclick="showTab('admin')">⚙️ Admin</div>
 <div id="tab-torneios" class="hidden">
-    <div id="area-criacao-torneio" class="card hidden">
-        <h3 style="color: var(--primary);">🛠️ Abrir Novo Torneio</h3>
-        <input type="text" id="tLocal" placeholder="Local do Torneio (Ex: Clube do Canto)">
-        <input type="date" id="tData" title="Data do Torneio">
-        <label style="font-size:12px; color: var(--accent);">Data Limite de Inscrição:</label>
-        <input type="date" id="tDataFimInscricao">
-        <input type="text" id="tJuiz" placeholder="Nome do Juiz">
-        <input type="number" id="tMaxAves" placeholder="Máx. de aves por proprietário">
-        <textarea id="tObs" placeholder="Observações e Regras" style="width:100%; background:#2d2d2d; color:white; border-radius:8px; padding:10px; border:1px solid #333; margin-top:5px;"></textarea>
-        <button class="btn btn-save" onclick="criarTorneio()">PUBLICAR TORNEIO</button>
+    <div id="area-criacao-torneio" class="card hidden" style="margin-bottom: 20px;">
+        <h3 style="color: var(--primary);">🛠️ Configurar Novo Torneio</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <input type="text" id="tLocal" placeholder="Local">
+            <input type="date" id="tData">
+            <input type="text" id="tJuiz" placeholder="Juiz Responsável">
+            <input type="number" id="tMaxAves" placeholder="Limite de Aves">
+        </div>
+        <textarea id="tObs" placeholder="Observações do Torneio" rows="3" style="width:100%; margin-top:10px;"></textarea>
+        <button class="btn btn-save" onclick="criarTorneio()">PUBLICAR EVENTO</button>
     </div>
 
-    <div class="card">
-        <h3>🏆 Torneios Disponíveis</h3>
-        <div id="listaTorneiosAtivos"></div>
+    <div class="card-torneio">
+        <h3 style="display: flex; align-items: center; gap: 10px;">
+            <span style="color: var(--accent);">🏆</span> Torneios Disponíveis
+        </h3>
+        <p style="color: #888; font-size: 14px;">Selecione um evento abaixo para realizar sua inscrição.</p>
+        <hr style="border: 0.5px solid #333; margin: 15px 0;">
+        <div id="listaTorneiosAtivos">
+            </div>
     </div>
 </div>
-
+    
 <div id="modalInscricao" class="card hidden" style="border: 2px solid var(--primary); position: fixed; top: 10%; left: 5%; width: 90%; z-index: 1000; box-shadow: 0px 0px 50px rgba(0,0,0,0.9);">
     <h3 id="inscricaoTitulo" style="color: var(--primary);">Inscrição</h3>
     <p id="inscricaoInfos" style="font-size:12px; color:#ccc;"></p>
@@ -407,6 +412,31 @@
         db.ref('torneios/'+idT+'/'+id).remove();
         db.ref('historico_aves/'+anilha+'/'+id).remove();
     }
+.nav-tabs {
+    display: flex;
+    justify-content: center; /* Centraliza as opções */
+    gap: 15px;
+    background: #121212;
+    padding: 15px 0;
+    border-bottom: 2px solid #333;
+}
+.card-torneio {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    text-align: left; /* Alinha o conteúdo à esquerda */
+}
+.torneio-item {
+    background: #2d2d2d;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
 </script>
 </body>
