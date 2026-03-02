@@ -18,8 +18,10 @@
         .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-save { background: var(--primary); color: white; }
         .btn-del { background: none; border: none; color: var(--danger); cursor: pointer; font-weight: bold; }
+        .btn-zap { background: #25d366; color: white; margin-top: 20px; }
         .hidden { display: none !important; }
         .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #444; text-align: left; }
+        .tempo-destaque { color: var(--primary); font-family: monospace; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -27,8 +29,7 @@
 <div class="container">
     <div id="loginSection" class="card">
         <h2 style="color: var(--primary);">🔰 FIBRA LOGIN</h2>
-        <p style="font-size: 12px; color: #888;">Digite os dados para acessar</p>
-        <input type="text" id="userInput" placeholder="Usuário (ex: matheus)">
+        <input type="text" id="userInput" placeholder="Usuário">
         <input type="password" id="userPass" placeholder="Senha">
         <button class="btn btn-save" onclick="validarLogin()">ENTRAR NO SISTEMA</button>
         <p id="loginError" style="color: var(--danger); font-size: 13px; margin-top: 10px; display: none;">Usuário ou senha incorretos!</p>
@@ -46,30 +47,25 @@
             <div class="card">
                 <h3 id="displayEvento" style="color: var(--accent);">Selecione o Torneio</h3>
                 <div id="listaRanking"></div>
-<button class="btn btn-zap" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
+                <button class="btn btn-zap" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
             </div>
         </div>
 
         <div id="tab-lancar" class="hidden">
             <div class="card">
-                <h4>📍 Dados do Torneio e Treino</h4>
+                <h4>📍 Dados do Torneio</h4>
                 <input type="text" id="localEvento" placeholder="Local (Ex: Campo Novo)" oninput="escutarDados()">
                 <input type="date" id="dataEvento" onchange="escutarDados()">
-<label style="font-size: 12px; color: var(--accent);">Selecione a Categoria:</label>
-<select id="aveCategoria">
-    <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
-    <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
-    <option value="Canto Livre Adulto">Canto Livre Adulto</option>
-    <option value="Canto Livre Filhote">Canto Livre Filhote</option>
-    <option value="Peito de Aço Adulto">Peito de Aço Adulto</option>
-    <option value="Peito de Aço Filhote">Peito de Aço Filhote</option>
-</select>
+                <select id="aveCategoria">
+                    <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
+                    <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
+                </select>
             </div>
             <div class="card">
-                <h4>🐦 Lançar Ave (00:00:00)</h4>
+                <h4>🐦 Lançar Ave</h4>
                 <input type="text" id="aveNome" placeholder="Nome da Ave">
                 <input type="text" id="aveDono" placeholder="Proprietário">
-                <input type="text" id="aveAnilha" placeholder="Número da Anilha">
+                <input type="text" id="aveAnilha" placeholder="Anilha">
                 <input type="text" id="aveTempo" placeholder="00:00:00" oninput="maskTempo(this)" maxlength="8">
                 <button class="btn btn-save" onclick="salvarResultado()">REGISTRAR AGORA</button>
             </div>
@@ -116,49 +112,31 @@
     let userLogado = null;
     let dadosRanking = [];
 
-    // FUNÇÃO DE LOGIN CORRIGIDA
     async function validarLogin() {
         const u = document.getElementById('userInput').value.toLowerCase().trim();
         const p = document.getElementById('userPass').value.trim();
-        const erroMsg = document.getElementById('loginError');
-
-        // ACESSO MESTRE GARANTIDO
-        if(u === 'matheus' && p === 'admin123') {
-            entrar({nome: 'matheus', role: 'admin'});
-            return;
-        }
-
-        // BUSCA NO BANCO DE DADOS
+        if(u === 'matheus' && p === 'admin123') { entrar({nome: 'matheus', role: 'admin'}); return; }
         try {
             const snap = await db.ref('usuarios/' + u).once('value');
-            if(snap.exists() && snap.val().senha === p) {
-                entrar(snap.val());
-            } else {
-                erroMsg.style.display = 'block';
-            }
-        } catch(e) {
-            alert("Erro ao conectar ao banco. Verifique sua internet.");
-        }
+            if(snap.exists() && snap.val().senha === p) entrar(snap.val());
+            else document.getElementById('loginError').style.display = 'block';
+        } catch(e) { alert("Erro de conexão."); }
     }
 
     function entrar(dados) {
         userLogado = dados;
         document.getElementById('loginSection').classList.add('hidden');
         document.getElementById('appContent').classList.remove('hidden');
-        
         if(dados.role === 'admin') {
             document.getElementById('link-admin').classList.remove('hidden');
             listarUsuarios();
         }
-        if(dados.role !== 'view') {
-            document.getElementById('link-lancar').classList.remove('hidden');
-        }
+        if(dados.role !== 'view') document.getElementById('link-lancar').classList.remove('hidden');
         showTab('ranking');
     }
 
     function maskTempo(i) {
         let v = i.value.replace(/\D/g,'');
-        if (v.length > 6) v = v.substring(0, 6);
         if (v.length >= 5) v = v.replace(/^(\d{2})(\d{2})(\d{1,2})/, "$1:$2:$3");
         else if (v.length >= 3) v = v.replace(/^(\d{2})(\d{1,2})/, "$1:$2");
         i.value = v;
@@ -169,7 +147,7 @@
         const data = document.getElementById('dataEvento').value;
         if(!local || !data) return;
         const id = data + "_" + local.replace(/ /g,'_');
-        document.getElementById('displayEvento').innerText = local.toUpperCase();
+        document.getElementById('displayEvento').innerText = local.toUpperCase() + " - " + data.split('-').reverse().join('/');
         db.ref('torneios/'+id).on('value', snap => {
             dadosRanking = [];
             snap.forEach(c => { dadosRanking.push(c.val()); });
@@ -180,9 +158,10 @@
     function renderizar() {
         dadosRanking.sort((a,b) => b.tempo.localeCompare(a.tempo));
         const div = document.getElementById('listaRanking'); div.innerHTML = "";
+        if(dadosRanking.length === 0) { div.innerHTML = "<p>Nenhuma ave lançada.</p>"; return; }
         dadosRanking.forEach((p,i) => {
             let del = (userLogado.role === 'admin') ? `<button class="btn-del" onclick="excluirItem('${p.id_db}','${p.anilha}')">✘</button>` : '';
-            div.innerHTML += `<div class="ranking-item"><span><b>${i+1}º</b> ${p.nome} (${p.dono}) ${del}</span><b>${p.tempo}</b></div>`;
+            div.innerHTML += `<div class="ranking-item"><span><b>${i+1}º</b> ${p.nome.toUpperCase()} (${p.dono}) ${del}</span><b class="tempo-destaque">${p.tempo}</b></div>`;
         });
     }
 
@@ -191,22 +170,35 @@
         const data = document.getElementById('dataEvento').value;
         const anilha = document.getElementById('aveAnilha').value.toUpperCase().trim();
         const tempo = document.getElementById('aveTempo').value;
+        const cat = document.getElementById('aveCategoria').value;
 
-        if(!local || !data || !anilha || tempo.length < 8) return alert("Preencha Local, Data, Anilha e Tempo!");
-
-        // VERIFICA SE JÁ EXISTE NO RANKING LOCAL (EVITA DUPLICADO)
-        if (dadosRanking.find(ave => ave.anilha === anilha)) {
-            return alert("ERRO: Esta anilha já foi registrada hoje!");
-        }
+        if(!local || !data || !anilha || tempo.length < 8) return alert("Preencha tudo corretamente!");
 
         const idT = data + "_" + local.replace(/ /g,'_');
-        const info = { id_db: Date.now(), nome: document.getElementById('aveNome').value, dono: document.getElementById('aveDono').value, anilha: anilha, tempo: tempo, data: data, local: local };
+        const info = { id_db: Date.now(), nome: document.getElementById('aveNome').value, dono: document.getElementById('aveDono').value, anilha: anilha, tempo: tempo, data: data, local: local, categoria: cat };
         
         db.ref('torneios/'+idT+'/'+info.id_db).set(info).then(() => {
             db.ref('historico_aves/'+anilha+'/'+info.id_db).set(info);
-            alert("Sucesso!");
+            alert("Salvo!");
             document.getElementById('aveNome').value = ""; document.getElementById('aveAnilha').value = ""; document.getElementById('aveTempo').value = "";
         });
+    }
+
+    function compartilharZap() {
+        const local = document.getElementById('localEvento').value || "Torneio";
+        let mensagem = `🏆 *RANKING FIBRA - ${local.toUpperCase()}* 🏆\n\n`;
+        dadosRanking.forEach((p, i) => {
+            mensagem += `*${i + 1}º* ${p.nome.toUpperCase()}\n👤 ${p.dono} | ⏱️ *${p.tempo}*\n\n`;
+        });
+        mensagem += `_Gerado por Fibra OS 🔰_`;
+        window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(mensagem), '_blank');
+    }
+
+    function showTab(t){
+        document.querySelectorAll('[id^="tab-"]').forEach(d => d.classList.add('hidden'));
+        document.getElementById('tab-'+t).classList.remove('hidden');
+        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+        document.getElementById('link-'+t).classList.add('active');
     }
 
     function listarUsuarios() {
@@ -214,7 +206,7 @@
             const div = document.getElementById('listaUsuarios'); div.innerHTML = "";
             snap.forEach(u => {
                 const user = u.val();
-                div.innerHTML += `<div class="ranking-item"><span>${user.nome} (${user.role})</span><button class="btn-del" onclick="excluirUsuario('${user.nome}')">✘</button></div>`;
+                div.innerHTML += `<div class="ranking-item"><span>${user.nome}</span><button class="btn-del" onclick="excluirUsuario('${user.nome}')">✘</button></div>`;
             });
         });
     }
@@ -224,9 +216,9 @@
     function cadastrarUsuario() {
         const n = document.getElementById('nUser').value.toLowerCase().trim();
         const p = document.getElementById('nPass').value.trim();
-        if(!n || !p) return alert("Preencha tudo!");
+        if(!n || !p) return alert("Preencha!");
         db.ref('usuarios/'+n).set({nome:n, senha:p, role:document.getElementById('nRole').value});
-        alert("Usuário Criado!");
+        alert("Criado!");
     }
 
     function pesquisarAve() {
@@ -238,93 +230,12 @@
         });
     }
 
-    function showTab(t){
-        document.querySelectorAll('[id^="tab-"]').forEach(d => d.classList.add('hidden'));
-        document.getElementById('tab-'+t).classList.remove('hidden');
-        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
-        document.getElementById('link-'+t).classList.add('active');
-    }
-
     function excluirItem(id, anilha) {
         if(!confirm("Excluir registro?")) return;
         const idT = document.getElementById('dataEvento').value + "_" + document.getElementById('localEvento').value.replace(/ /g,'_');
         db.ref('torneios/'+idT+'/'+id).remove();
         db.ref('historico_aves/'+anilha+'/'+id).remove();
     }
-function compartilharZap() {
-    const local = document.getElementById('localEvento').value || "Torneio";
-    const dataInput = document.getElementById('dataEvento').value;
-    const dataBr = dataInput ? dataInput.split('-').reverse().join('/') : "";
-// Dentro do forEach da função compartilharZap:
-mensagem += `*${i + 1}º* ${p.nome.toUpperCase()} (${p.categoria})\n`;
-    
-    if (dadosRanking.length === 0) {
-        return alert("O ranking está vazio! Lance as aves primeiro.");
-    }
-
-    // Montando o cabeçalho da mensagem
-    let mensagem = `🏆 *RANKING FIBRA - ${local.toUpperCase()}* 🏆\n`;
-    if(dataBr) mensagem += `📅 DATA: ${dataBr}\n`;
-    mensagem += `\n--------------------------\n`;
-
-    // Adicionando cada ave do ranking (Top 10 ou todos)
-    dadosRanking.forEach((p, i) => {
-        mensagem += `*${i + 1}º* ${p.nome.toUpperCase()}\n`;
-        mensagem += `👤 ${p.dono} | ⏱️ *${p.tempo}*\n\n`;
-    });
-
-    mensagem += `--------------------------\n_Gerado por Fibra OS 🔰_`;
-
-    // O encodeURIComponent é essencial para o WhatsApp entender quebras de linha e emojis
-    const url = "https://api.whatsapp.com/send?text=" + encodeURIComponent(mensagem);
-    
-    // Abre em uma nova aba
-    window.open(url, '_blank');
-function escutarDados() {
-    const local = document.getElementById('localEvento').value;
-    const data = document.getElementById('dataEvento').value;
-    
-    // Só executa se o local e a data estiverem preenchidos
-    if(!local || !data) return;
-
-    // Cria a identificação única do dia (Ex: 2024-02-28_Campo_Novo)
-    const idTorneio = data + "_" + local.replace(/ /g,'_');
-    
-    // Mostra no título o que está sendo filtrado
-    document.getElementById('displayEvento').innerText = local.toUpperCase() + " - " + data.split('-').reverse().join('/');
-
-    // ESTE É O COMANDO PRINCIPAL:
-    // O '.on' faz o Firebase avisar o app toda vez que algo novo for salvo
-    db.ref('torneios/' + idTorneio).on('value', snap => {
-        dadosRanking = [];
-        snap.forEach(ave => {
-            dadosRanking.push(ave.val());
-        });
-        // Chama a função que desenha a lista na tela
-        renderizar(); 
-    });
-function renderizar() {
-    // Ordena do maior tempo para o menor
-    dadosRanking.sort((a,b) => b.tempo.localeCompare(a.tempo));
-    
-    const div = document.getElementById('listaRanking'); 
-    div.innerHTML = ""; // Limpa a tela para não duplicar
-
-    if(dadosRanking.length === 0) {
-        div.innerHTML = "<p style='text-align:center; color:#888;'>Nenhuma ave lançada hoje.</p>";
-        return;
-    }
-
-    dadosRanking.forEach((p, i) => {
-        // Cria a linha com o nome da ave e o tempo
-        div.innerHTML += `
-            <div class="ranking-item">
-                <span><b>${i+1}º</b> ${p.nome.toUpperCase()} (${p.dono})</span>
-                <b class="tempo-destaque">${p.tempo}</b>
-            </div>`;
-    });
-}
-}
 </script>
 </body>
 </html>
