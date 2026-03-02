@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fibra OS v16.6 - Campo Novo</title>
+    <title>Fibra OS v17.0 - Campo Novo</title>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-database-compat.js"></script>
     <style>
@@ -11,17 +11,18 @@
         body { font-family: 'Segoe UI', sans-serif; background: var(--dark); color: #e0e0e0; margin: 0; padding: 10px; }
         .container { max-width: 600px; margin: auto; }
         .card { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 15px; border: 1px solid #333; text-align: center; }
-        .nav-tabs { display: flex; gap: 15px; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; overflow-x: auto; }
-        .tab-link { color: #888; cursor: pointer; font-weight: bold; white-space: nowrap; padding: 5px; font-size: 14px; text-transform: uppercase; }
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; overflow-x: auto; }
+        .tab-link { color: #888; cursor: pointer; font-weight: bold; white-space: nowrap; padding: 8px; font-size: 13px; text-transform: uppercase; }
         .tab-link.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
         input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #2d2d2d; color: white; box-sizing: border-box; font-size: 16px; }
-        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .btn { width: 100%; padding: 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; text-transform: uppercase; }
         .btn-save { background: var(--primary); color: white; }
-        .btn-del { background: none; border: none; color: var(--danger); cursor: pointer; font-weight: bold; }
         .btn-zap { background: #25d366; color: white; margin-top: 20px; }
+        .btn-del { background: none; border: none; color: var(--danger); cursor: pointer; font-weight: bold; }
         .hidden { display: none !important; }
-        .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #444; text-align: left; }
-        .tempo-destaque { color: var(--primary); font-family: monospace; font-size: 18px; }
+        .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #333; text-align: left; background: #1a1a1a; margin-bottom: 5px; border-radius: 8px; }
+        .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: bold; margin-bottom: 4px; display: inline-block; }
+        .tempo-destaque { color: var(--primary); font-family: monospace; font-size: 18px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -32,67 +33,77 @@
         <input type="text" id="userInput" placeholder="Usuário">
         <input type="password" id="userPass" placeholder="Senha">
         <button class="btn btn-save" onclick="validarLogin()">ENTRAR NO SISTEMA</button>
-        <p id="loginError" style="color: var(--danger); font-size: 13px; margin-top: 10px; display: none;">Usuário ou senha incorretos!</p>
+        <p id="loginError" style="color: var(--danger); font-size: 13px; margin-top: 10px; display: none;">Dados incorretos!</p>
     </div>
 
     <div id="appContent" class="hidden">
         <div class="nav-tabs">
             <div id="link-ranking" class="tab-link active" onclick="showTab('ranking')">🏆 Ranking</div>
             <div id="link-lancar" class="tab-link hidden" onclick="showTab('lancar')">⏱️ Lançar</div>
-            <div id="link-historico" class="tab-link" onclick="showTab('historico')">📊 Histórico</div>
-            <div id="link-admin" class="tab-link hidden" onclick="showTab('admin')">⚙️ Matheus</div>
+            <div id="link-historico" class="tab-link" onclick="showTab('historico')">🔍 Busca</div>
+            <div id="link-admin" class="tab-link hidden" onclick="showTab('admin')">⚙️ Admin</div>
         </div>
 
         <div id="tab-ranking">
             <div class="card">
-                <h3 id="displayEvento" style="color: var(--accent);">Selecione o Torneio</h3>
+                <h3 style="color: var(--accent);">📅 Consultar Resultados</h3>
+                <p style="font-size: 12px; color: #888;">Selecione o local e a data para ver o ranking</p>
+                <input type="text" id="filtroLocal" placeholder="Local (Ex: Campo Novo)">
+                <input type="date" id="filtroData">
+                <button class="btn" style="background: var(--accent); color: white;" onclick="buscarRanking()">CARREGAR RANKING</button>
+                
+                <hr style="border: 0.5px solid #333; margin: 20px 0;">
+                
+                <h3 id="displayEvento" style="color: var(--primary);">Aguardando Consulta...</h3>
                 <div id="listaRanking"></div>
-                <button class="btn btn-zap" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
+                <button id="btnZap" class="btn btn-zap hidden" onclick="compartilharZap()">🔥 ENVIAR PARA WHATSAPP</button>
             </div>
         </div>
 
         <div id="tab-lancar" class="hidden">
             <div class="card">
-                <h4>📍 Dados do Torneio</h4>
-                <input type="text" id="localEvento" placeholder="Local (Ex: Campo Novo)" oninput="escutarDados()">
-                <input type="date" id="dataEvento" onchange="escutarDados()">
+                <h4>📍 Dados do Evento</h4>
+                <input type="text" id="localEvento" placeholder="Local do Evento">
+                <input type="date" id="dataEvento">
                 <select id="aveCategoria">
                     <option value="Canto Fibra Adulto">Canto Fibra Adulto</option>
                     <option value="Canto Fibra Filhote">Canto Fibra Filhote</option>
+                    <option value="Canto Livre Adulto">Canto Livre Adulto</option>
+                    <option value="Peito de Aço">Peito de Aço</option>
                 </select>
             </div>
             <div class="card">
-                <h4>🐦 Lançar Ave</h4>
+                <h4>🐦 Registro da Ave</h4>
                 <input type="text" id="aveNome" placeholder="Nome da Ave">
                 <input type="text" id="aveDono" placeholder="Proprietário">
-                <input type="text" id="aveAnilha" placeholder="Anilha">
+                <input type="text" id="aveAnilha" placeholder="Número da Anilha">
                 <input type="text" id="aveTempo" placeholder="00:00:00" oninput="maskTempo(this)" maxlength="8">
-                <button class="btn btn-save" onclick="salvarResultado()">REGISTRAR AGORA</button>
+                <button class="btn btn-save" onclick="salvarResultado()">REGISTRAR E SALVAR</button>
             </div>
         </div>
 
         <div id="tab-historico" class="hidden">
             <div class="card">
-                <h3>🔍 Histórico</h3>
-                <input type="text" id="buscaAnilha" placeholder="Anilha..." oninput="pesquisarAve()">
+                <h3>🔍 Histórico por Ave</h3>
+                <input type="text" id="buscaAnilha" placeholder="Digite a Anilha..." oninput="pesquisarAve()">
                 <div id="resBusca"></div>
             </div>
         </div>
 
         <div id="tab-admin" class="hidden">
             <div class="card">
-                <h3>👥 Gestão Master</h3>
+                <h3>👥 Gestão de Acessos</h3>
                 <div id="listaUsuarios"></div>
                 <hr style="border:1px solid #333; margin:15px 0;">
-                <input type="text" id="nUser" placeholder="Novo Login">
-                <input type="text" id="nPass" placeholder="Nova Senha">
+                <input type="text" id="nUser" placeholder="Login">
+                <input type="text" id="nPass" placeholder="Senha">
                 <select id="nRole">
                     <option value="admin">🏆 Admin</option>
                     <option value="supervisor">🔑 Supervisor</option>
                     <option value="view">👁️ Visitante</option>
                 </select>
-                <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR NOVO USUÁRIO</button>
-                <button class="btn" style="background: #444; color: white;" onclick="location.reload()">SAIR / LOGOUT</button>
+                <button class="btn btn-save" onclick="cadastrarUsuario()">CRIAR USUÁRIO</button>
+                <button class="btn" style="background: #444;" onclick="location.reload()">SAIR</button>
             </div>
         </div>
     </div>
@@ -116,11 +127,9 @@
         const u = document.getElementById('userInput').value.toLowerCase().trim();
         const p = document.getElementById('userPass').value.trim();
         if(u === 'matheus' && p === 'admin123') { entrar({nome: 'matheus', role: 'admin'}); return; }
-        try {
-            const snap = await db.ref('usuarios/' + u).once('value');
-            if(snap.exists() && snap.val().senha === p) entrar(snap.val());
-            else document.getElementById('loginError').style.display = 'block';
-        } catch(e) { alert("Erro de conexão."); }
+        const snap = await db.ref('usuarios/' + u).once('value');
+        if(snap.exists() && snap.val().senha === p) entrar(snap.val());
+        else document.getElementById('loginError').style.display = 'block';
     }
 
     function entrar(dados) {
@@ -135,6 +144,13 @@
         showTab('ranking');
     }
 
+    function showTab(t){
+        document.querySelectorAll('[id^="tab-"]').forEach(d => d.classList.add('hidden'));
+        document.getElementById('tab-'+t).classList.remove('hidden');
+        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
+        document.getElementById('link-'+t).classList.add('active');
+    }
+
     function maskTempo(i) {
         let v = i.value.replace(/\D/g,'');
         if (v.length >= 5) v = v.replace(/^(\d{2})(\d{2})(\d{1,2})/, "$1:$2:$3");
@@ -142,15 +158,17 @@
         i.value = v;
     }
 
-    function escutarDados() {
-        const local = document.getElementById('localEvento').value;
-        const data = document.getElementById('dataEvento').value;
-        if(!local || !data) return;
-        const id = data + "_" + local.replace(/ /g,'_');
-        document.getElementById('displayEvento').innerText = local.toUpperCase() + " - " + data.split('-').reverse().join('/');
-        db.ref('torneios/'+id).on('value', snap => {
+    function buscarRanking() {
+        const local = document.getElementById('filtroLocal').value.trim();
+        const data = document.getElementById('filtroData').value;
+        if(!local || !data) return alert("Selecione Local e Data!");
+        
+        const idT = data + "_" + local.replace(/ /g,'_');
+        db.ref('torneios/' + idT).on('value', snap => {
             dadosRanking = [];
             snap.forEach(c => { dadosRanking.push(c.val()); });
+            document.getElementById('displayEvento').innerText = local.toUpperCase() + " (" + data.split('-').reverse().join('/') + ")";
+            document.getElementById('btnZap').classList.remove('hidden');
             renderizar();
         });
     }
@@ -158,10 +176,19 @@
     function renderizar() {
         dadosRanking.sort((a,b) => b.tempo.localeCompare(a.tempo));
         const div = document.getElementById('listaRanking'); div.innerHTML = "";
-        if(dadosRanking.length === 0) { div.innerHTML = "<p>Nenhuma ave lançada.</p>"; return; }
-        dadosRanking.forEach((p,i) => {
-            let del = (userLogado.role === 'admin') ? `<button class="btn-del" onclick="excluirItem('${p.id_db}','${p.anilha}')">✘</button>` : '';
-            div.innerHTML += `<div class="ranking-item"><span><b>${i+1}º</b> ${p.nome.toUpperCase()} (${p.dono}) ${del}</span><b class="tempo-destaque">${p.tempo}</b></div>`;
+        if(dadosRanking.length === 0) { div.innerHTML = "<p>Nenhum dado para este dia.</p>"; return; }
+        
+        dadosRanking.forEach((p, i) => {
+            let del = (userLogado.role === 'admin') ? `<button class="btn-del" onclick="excluirItem('${p.id_db}','${p.anilha}','${p.data}','${p.local}')">✘</button>` : '';
+            div.innerHTML += `
+                <div class="ranking-item">
+                    <div>
+                        <span class="tag" style="background:${p.categoria.includes('Filhote') ? '#2980b9':'#27ae60'}">${p.categoria}</span><br>
+                        <span><b>${i+1}º</b> ${p.nome.toUpperCase()}</span><br>
+                        <small style="color:#888">${p.dono} ${del}</small>
+                    </div>
+                    <span class="tempo-destaque">${p.tempo}</span>
+                </div>`;
         });
     }
 
@@ -172,42 +199,42 @@
         const tempo = document.getElementById('aveTempo').value;
         const cat = document.getElementById('aveCategoria').value;
 
-        if(!local || !data || !anilha || tempo.length < 8) return alert("Preencha tudo corretamente!");
+        if(!local || !data || !anilha || tempo.length < 8) return alert("Preencha todos os campos!");
 
         const idT = data + "_" + local.replace(/ /g,'_');
         const info = { id_db: Date.now(), nome: document.getElementById('aveNome').value, dono: document.getElementById('aveDono').value, anilha: anilha, tempo: tempo, data: data, local: local, categoria: cat };
         
         db.ref('torneios/'+idT+'/'+info.id_db).set(info).then(() => {
             db.ref('historico_aves/'+anilha+'/'+info.id_db).set(info);
-            alert("Salvo!");
+            alert("Ave Registrada com Sucesso!");
             document.getElementById('aveNome').value = ""; document.getElementById('aveAnilha').value = ""; document.getElementById('aveTempo').value = "";
         });
     }
 
-    function compartilharZap() {
-        const local = document.getElementById('localEvento').value || "Torneio";
-        let mensagem = `🏆 *RANKING FIBRA - ${local.toUpperCase()}* 🏆\n\n`;
-        dadosRanking.forEach((p, i) => {
-            mensagem += `*${i + 1}º* ${p.nome.toUpperCase()}\n👤 ${p.dono} | ⏱️ *${p.tempo}*\n\n`;
+    function pesquisarAve() {
+        const a = document.getElementById('buscaAnilha').value.toUpperCase();
+        if(a.length < 3) return;
+        db.ref('historico_aves/'+a).on('value', snap => {
+            const res = document.getElementById('resBusca'); res.innerHTML = "";
+            snap.forEach(c => { 
+                const r = c.val(); 
+                res.innerHTML += `<div class="ranking-item"><span>${r.data} - ${r.local}</span><b>${r.tempo}</b></div>`; 
+            });
         });
-        mensagem += `_Gerado por Fibra OS 🔰_`;
-        window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(mensagem), '_blank');
     }
 
-    function showTab(t){
-        document.querySelectorAll('[id^="tab-"]').forEach(d => d.classList.add('hidden'));
-        document.getElementById('tab-'+t).classList.remove('hidden');
-        document.querySelectorAll('.tab-link').forEach(l => l.classList.remove('active'));
-        document.getElementById('link-'+t).classList.add('active');
+    function compartilharZap() {
+        let msg = `🏆 *RANKING: ${document.getElementById('displayEvento').innerText}* 🏆\n\n`;
+        dadosRanking.forEach((p, i) => {
+            msg += `*${i+1}º* ${p.nome.toUpperCase()} - ${p.tempo}\n(Cat: ${p.categoria} | Dono: ${p.dono})\n\n`;
+        });
+        window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(msg), '_blank');
     }
 
     function listarUsuarios() {
         db.ref('usuarios').on('value', snap => {
             const div = document.getElementById('listaUsuarios'); div.innerHTML = "";
-            snap.forEach(u => {
-                const user = u.val();
-                div.innerHTML += `<div class="ranking-item"><span>${user.nome}</span><button class="btn-del" onclick="excluirUsuario('${user.nome}')">✘</button></div>`;
-            });
+            snap.forEach(u => { div.innerHTML += `<div class="ranking-item"><span>${u.key} (${u.val().role})</span><button class="btn-del" onclick="excluirUsuario('${u.key}')">✘</button></div>`; });
         });
     }
 
@@ -216,23 +243,12 @@
     function cadastrarUsuario() {
         const n = document.getElementById('nUser').value.toLowerCase().trim();
         const p = document.getElementById('nPass').value.trim();
-        if(!n || !p) return alert("Preencha!");
-        db.ref('usuarios/'+n).set({nome:n, senha:p, role:document.getElementById('nRole').value});
-        alert("Criado!");
+        if(n && p) db.ref('usuarios/'+n).set({nome:n, senha:p, role:document.getElementById('nRole').value}).then(()=>alert("Criado!"));
     }
 
-    function pesquisarAve() {
-        const a = document.getElementById('buscaAnilha').value.toUpperCase();
-        if(a.length < 2) return;
-        db.ref('historico_aves/'+a).on('value', snap => {
-            const res = document.getElementById('resBusca'); res.innerHTML = "";
-            snap.forEach(c => { const r = c.val(); res.innerHTML += `<div class="ranking-item"><span>${r.data}</span><b>${r.tempo}</b></div>`; });
-        });
-    }
-
-    function excluirItem(id, anilha) {
-        if(!confirm("Excluir registro?")) return;
-        const idT = document.getElementById('dataEvento').value + "_" + document.getElementById('localEvento').value.replace(/ /g,'_');
+    function excluirItem(id, anilha, data, local) {
+        if(!confirm("Excluir este tempo?")) return;
+        const idT = data + "_" + local.replace(/ /g,'_');
         db.ref('torneios/'+idT+'/'+id).remove();
         db.ref('historico_aves/'+anilha+'/'+id).remove();
     }
