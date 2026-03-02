@@ -41,7 +41,37 @@
             <div id="link-ranking" class="tab-link active" onclick="showTab('ranking')">🏆 Ranking</div>
             <div id="link-lancar" class="tab-link hidden" onclick="showTab('lancar')">⏱️ Lançar</div>
             <div id="link-historico" class="tab-link" onclick="showTab('historico')">🔍 Busca</div>
+<div id="link-torneios" class="tab-link" onclick="showTab('torneios')">📅 Torneios</div>
             <div id="link-admin" class="tab-link hidden" onclick="showTab('admin')">⚙️ Admin</div>
+<div id="tab-torneios" class="hidden">
+    <div id="area-criacao-torneio" class="card hidden">
+        <h3 style="color: var(--primary);">🛠️ Abrir Novo Torneio</h3>
+        <input type="text" id="tLocal" placeholder="Local do Torneio (Ex: Clube do Canto)">
+        <input type="date" id="tData" title="Data do Torneio">
+        <label style="font-size:12px; color: var(--accent);">Data Limite de Inscrição:</label>
+        <input type="date" id="tDataFimInscricao">
+        <input type="text" id="tJuiz" placeholder="Nome do Juiz">
+        <input type="number" id="tMaxAves" placeholder="Máx. de aves por proprietário">
+        <textarea id="tObs" placeholder="Observações e Regras" style="width:100%; background:#2d2d2d; color:white; border-radius:8px; padding:10px; border:1px solid #333; margin-top:5px;"></textarea>
+        <button class="btn btn-save" onclick="criarTorneio()">PUBLICAR TORNEIO</button>
+    </div>
+
+    <div class="card">
+        <h3>🏆 Torneios Disponíveis</h3>
+        <div id="listaTorneiosAtivos"></div>
+    </div>
+</div>
+
+<div id="modalInscricao" class="card hidden" style="border: 2px solid var(--primary); position: fixed; top: 10%; left: 5%; width: 90%; z-index: 1000; box-shadow: 0px 0px 50px rgba(0,0,0,0.9);">
+    <h3 id="inscricaoTitulo" style="color: var(--primary);">Inscrição</h3>
+    <p id="inscricaoInfos" style="font-size:12px; color:#ccc;"></p>
+    <hr style="border:0.5px solid #444">
+    <input type="text" id="iProprietario" placeholder="Proprietário" disabled style="background:#111; color:#888;">
+    <input type="text" id="iAve" placeholder="Nome do Canário">
+    <input type="text" id="iAnilha" placeholder="Número da Anilha">
+    <button class="btn btn-save" onclick="confirmarInscricao()">CONFIRMAR INSCRIÇÃO</button>
+    <button class="btn" style="background:#444;" onclick="fecharInscricao()">FECHAR</button>
+</div>
         </div>
 
         <div id="tab-ranking">
@@ -252,6 +282,89 @@
         db.ref('torneios/'+idT+'/'+id).remove();
         db.ref('historico_aves/'+anilha+'/'+id).remove();
     }
+let torneioSelecionado = null;
+
+// Função para Supervisor criar o torneio no Firebase
+function criarTorneio() {
+    const info = {
+        local: document.getElementById('tLocal').value,
+        data: document.getElementById('tData').value,
+        fimInscricao: document.getElementById('tDataFimInscricao').value,
+        juiz: document.getElementById('tJuiz').value,
+        maxAves: document.getElementById('tMaxAves').value,
+        obs: document.getElementById('tObs').value,
+        status: "aberto",
+        id: Date.now()
+    };
+    if(!info.local || !info.data) return alert("Preencha Local e Data!");
+    db.ref('agenda_torneios/' + info.id).set(info).then(() => {
+        alert("Torneio publicado!");
+        document.querySelectorAll('#area-criacao-torneio input').forEach(i => i.value = "");
+    });
+}
+
+// Função para listar os torneios na tela
+function listarTorneios() {
+    db.ref('agenda_torneios').on('value', snap => {
+        const div = document.getElementById('listaTorneiosAtivos');
+        div.innerHTML = "";
+        snap.forEach(t => {
+            const d = t.val();
+            const dataFmt = d.data.split('-').reverse().join('/');
+            div.innerHTML += `
+                <div class="ranking-item" style="flex-direction:column; align-items:flex-start; margin-bottom:15px; border-left:4px solid var(--primary);">
+                    <div style="width:100%; display:flex; justify-content:space-between;">
+                        <b style="color:var(--primary)">${d.local}</b>
+                        <span>📅 ${dataFmt}</span>
+                    </div>
+                    <small>👨‍⚖️ Juiz: ${d.juiz} | 🐦 Limite: ${d.maxAves}</small>
+                    <p style="font-size:11px; color:#aaa; margin:5px 0;">${d.obs}</p>
+                    <button class="btn" style="padding:10px; font-size:12px; background:var(--accent)" onclick="abrirJanelaInscricao('${t.key}')">FAZER INSCRIÇÃO</button>
+                </div>`;
+        });
+    });
+}
+
+function abrirJanelaInscricao(id) {
+    torneioSelecionado = id;
+    db.ref('agenda_torneios/'+id).once('value', snap => {
+        const t = snap.val();
+        document.getElementById('inscricaoTitulo').innerText = "Inscrição: " + t.local;
+        document.getElementById('iProprietario').value = userLogado.nome.toUpperCase();
+        document.getElementById('modalInscricao').classList.remove('hidden');
+    });
+}
+
+function confirmarInscricao() {
+    const ave = document.getElementById('iAve').value;
+    const anilha = document.getElementById('iAnilha').value;
+    if(!ave || !anilha) return alert("Preencha os dados da ave!");
+
+    const inscricao = {
+        proprietario: userLogado.nome.toUpperCase(),
+        ave: ave,
+        anilha: anilha,
+        data: new Date().toLocaleDateString()
+    };
+
+    db.ref('agenda_torneios/' + torneioSelecionado + '/inscritos').push(inscricao).then(() => {
+        alert("Inscrição confirmada!");
+        fecharInscricao();
+    });
+}
+
+function fecharInscricao() {
+    document.getElementById('modalInscricao').classList.add('hidden');
+}
+
+// ATUALIZE sua função entrar(dados) para incluir isso:
+// Procure a função entrar(dados) que você já tem e adicione estas linhas no final dela:
+/*
+    if(dados.role === 'admin' || dados.role === 'supervisor') {
+        document.getElementById('area-criacao-torneio').classList.remove('hidden');
+    }
+    listarTorneios();
+*/
 </script>
 </body>
 </html>
