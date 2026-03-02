@@ -213,48 +213,50 @@
     }
 
     // --- FUNÇÕES DE TORNEIOS (ACRÉSCIMO) ---
-
 function criarTorneio() {
-    // Pegando os valores dos campos
-    const local = document.getElementById('tLocal').value;
-    const data = document.getElementById('tData').value;
-    const juiz = document.getElementById('tJuiz').value;
-    const max = document.getElementById('tMaxAves').value;
-    const obs = document.getElementById('tObs').value;
+    console.log("Tentando publicar torneio..."); // Isso avisa se o botão foi clicado
 
-    // Teste de segurança: Se não tiver local ou data, ele para aqui
-    if(!local || !data) {
-        alert("⚠️ ATENÇÃO: Você precisa preencher o LOCAL e a DATA para publicar!");
-        return;
+    try {
+        const local = document.getElementById('tLocal').value;
+        const data = document.getElementById('tData').value;
+        const juiz = document.getElementById('tJuiz').value || "Não informado";
+        const max = document.getElementById('tMaxAves').value || 0;
+        const obs = document.getElementById('tObs').value || "";
+
+        if(!local || !data) {
+            alert("⚠️ Preencha pelo menos LOCAL e DATA!");
+            return;
+        }
+
+        const idT = Date.now();
+        const novoTorneio = {
+            id: idT,
+            local: local,
+            data: data,
+            juiz: juiz,
+            maxAves: max,
+            obs: obs,
+            status: "aberto"
+        };
+
+        // SALVANDO NO BANCO
+        db.ref('agenda_torneios/' + idT).set(novoTorneio)
+        .then(() => {
+            alert("✅ TORNEIO PUBLICADO COM SUCESSO!");
+            // Limpa os campos após salvar
+            document.getElementById('tLocal').value = "";
+            document.getElementById('tData').value = "";
+            document.getElementById('tJuiz').value = "";
+            document.getElementById('tMaxAves').value = "";
+            document.getElementById('tObs').value = "";
+        })
+        .catch((error) => {
+            alert("❌ Erro no Firebase: " + error.message);
+        });
+
+    } catch (err) {
+        alert("❌ Erro no código: " + err.message);
     }
-
-    const idTorneio = Date.now(); // Cria um ID único baseado na hora atual
-
-    const dadosParaSalvar = {
-        id: idTorneio,
-        local: local,
-        data: data,
-        juiz: juiz || "Não informado",
-        maxAves: max || 0,
-        obs: obs || "",
-        status: "aberto"
-    };
-
-    // Salvando no Firebase
-    db.ref('agenda_torneios/' + idTorneio).set(dadosParaSalvar)
-    .then(() => {
-        alert("✅ SUCESSO! O torneio foi publicado e já aparece na lista.");
-        // Limpa os campos após salvar
-        document.getElementById('tLocal').value = "";
-        document.getElementById('tData').value = "";
-        document.getElementById('tJuiz').value = "";
-        document.getElementById('tMaxAves').value = "";
-        document.getElementById('tObs').value = "";
-    })
-    .catch((erro) => {
-        console.error(erro);
-        alert("❌ ERRO AO SALVAR: Verifique sua conexão ou as permissões do Firebase.");
-    });
 }
 
     function listarTorneios() {
